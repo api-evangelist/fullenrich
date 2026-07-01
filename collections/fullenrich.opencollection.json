@@ -1,0 +1,113 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "FullEnrich API",
+    "version": "2.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{apiKey}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Contact Enrichment",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Start Bulk Enrichment",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://app.fullenrich.com/api/v2/contact/enrich/bulk",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"name\": \"My enrichment batch\",\n  \"webhook_url\": \"https://example.com/webhooks/fullenrich\",\n  \"data\": [\n    {\n      \"first_name\": \"John\",\n      \"last_name\": \"Doe\",\n      \"domain\": \"acme.com\",\n      \"company_name\": \"Acme Inc\",\n      \"linkedin_url\": \"https://www.linkedin.com/in/johndoe\",\n      \"enrich_fields\": [\"contact.work_emails\", \"contact.phones\"],\n      \"custom\": { \"crm_id\": \"12345\" }\n    }\n  ]\n}"
+            }
+          },
+          "docs": "Submit up to 100 contacts for waterfall enrichment. Returns an enrichment_id."
+        },
+        {
+          "info": {
+            "name": "Get Bulk Enrichment Results",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://app.fullenrich.com/api/v2/contact/enrich/bulk/{{enrichmentId}}"
+          },
+          "docs": "Retrieve the results of a bulk enrichment by its enrichment_id."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Reverse Email Lookup",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Start Reverse Email Lookup",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://app.fullenrich.com/api/v2/contact/reverse/email/bulk",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"name\": \"Reverse lookup batch\",\n  \"data\": [\n    { \"email\": \"john.doe@acme.com\" }\n  ]\n}"
+            }
+          },
+          "docs": "Resolve a person and company from one or more email addresses."
+        },
+        {
+          "info": {
+            "name": "Get Reverse Email Lookup Results",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://app.fullenrich.com/api/v2/contact/reverse/email/bulk?enrichment_id={{enrichmentId}}"
+          },
+          "docs": "Retrieve the result of a reverse email lookup by its enrichment_id."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Account",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get Workspace Credits",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://app.fullenrich.com/api/v2/account/credits"
+          },
+          "docs": "Returns the current credit balance available in your workspace."
+        },
+        {
+          "info": {
+            "name": "Verify API Key",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://app.fullenrich.com/api/v2/account/keys/verify"
+          },
+          "docs": "Validates that the supplied API key is active."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+specification: FinOps Framework
+specificationVersion: '1.0'
+schema: https://www.finops.org/framework/
+provider: FullEnrich
+providerId: fullenrich
+created: '2026-07-01'
+modified: '2026-07-01'
+reconciled: false
+tags:
+- B2B Data
+- Contact Enrichment
+- Email Finder
+- Phone Finder
+- FinOps
+- Cost Management
+- FOCUS
+description: >-
+  FinOps view of FullEnrich spend. FullEnrich bills in credits that are only
+  consumed when verified data is found: one credit per verified work email,
+  three credits per personal email, and ten credits per mobile phone number.
+  Failed lookups, landlines, and out-of-service numbers cost nothing. Credits
+  are purchased through monthly or annual subscription tiers and roll over
+  (three months monthly, twelve months annual). Cost is driven by which
+  enrich_fields are requested and by match rates.
+notes: >-
+  Credit-to-currency rates depend on the subscription tier and change over time;
+  verify against the FullEnrich pricing page during reconciliation.
+sources:
+- https://fullenrich.com/pricing
+- https://docs.fullenrich.com
+- https://focus.finops.org/focus-specification/v1-3/
+alignedWith:
+  framework: FinOps Foundation Framework
+  frameworkUrl: https://www.finops.org/framework/
+  dataSpec: FOCUS
+  dataSpecVersion: '1.3'
+  dataSpecUrl: https://focus.finops.org/focus-specification/v1-3/
+publisherName: FullEnrich
+serviceCategory: Data and Analytics
+billingModel:
+  pricingCategory: Commitment-Based
+  billingFrequency: Monthly
+  billingCurrency: USD
+  chargeCategories:
+  - Purchase
+  - Usage
+focusColumns:
+  ServiceName: FullEnrich
+  ServiceCategory: Data and Analytics
+  ProviderName: FullEnrich
+  PublisherName: FullEnrich
+  InvoiceIssuerName: FullEnrich
+  BillingCurrency: USD
+  ChargeCategory: Usage
+  PricingCategory: Commitment-Based
+meters:
+- name: work_email_credits
+  description: One credit consumed per verified work email found.
+  unit: credits
+  aggregation: sum
+  dimensions:
+  - account
+  - enrichment
+- name: personal_email_credits
+  description: Three credits consumed per personal email found.
+  unit: credits
+  aggregation: sum
+  dimensions:
+  - account
+  - enrichment
+- name: phone_credits
+  description: Ten credits consumed per mobile phone number found.
+  unit: credits
+  aggregation: sum
+  dimensions:
+  - account
+  - enrichment
+- name: contacts_submitted
+  description: Contacts submitted for enrichment (up to 100 per request); not billed directly.
+  unit: contacts
+  aggregation: sum
+  dimensions:
+  - account
+  - enrichment
+- name: credit_balance
+  description: Remaining workspace credit balance from GET /account/credits.
+  unit: credits
+  aggregation: last
+  dimensions:
+  - account
+principles:
+- name: Visibility
+  description: >-
+    Poll GET /account/credits to track balance and read cost.credits on each
+    enrichment result to attribute spend per batch.
+- name: Allocation
+  description: >-
+    Use the custom object on each contact and the readable enrichment name to
+    tag records to teams, campaigns, or CRM records for chargeback.
+- name: Optimization
+  description: >-
+    Request only the enrich_fields you need — skip phones (10 credits) or
+    personal emails (3 credits) when a work email (1 credit) suffices. Because
+    failed lookups are free, dedupe inputs and pass LinkedIn URLs to raise match
+    rates without adding cost.
+- name: Accountability
+  description: >-
+    Assign a credit budget per workspace/key, review monthly credit burn against
+    the plan allotment, and account for the three/twelve-month rollover window.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

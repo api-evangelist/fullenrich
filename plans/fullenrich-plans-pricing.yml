@@ -1,0 +1,145 @@
+specification: API Commons Plans
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
+provider: FullEnrich
+providerId: fullenrich
+created: '2026-07-01'
+modified: '2026-07-01'
+reconciled: false
+tags:
+- B2B Data
+- Contact Enrichment
+- Email Finder
+- Phone Finder
+- Waterfall Enrichment
+- Plans
+description: >-
+  FullEnrich uses a credit-based model. Credits are only consumed when verified
+  data is found: one credit per verified work email, three credits per personal
+  email, and ten credits per mobile phone number. Failed lookups, landlines, and
+  out-of-service numbers are free. Monthly subscription tiers include a fixed
+  credit allotment, with a free trial and custom Enterprise pricing for
+  high-volume teams. Unused credits roll over (three months on monthly plans,
+  twelve months on annual plans) and all plans include unlimited users.
+notes: >-
+  Plan names, prices, and included credits vary across FullEnrich's marketing
+  and third-party review pages and change over time. Verify the current tiers,
+  prices, and credit allotments on the FullEnrich pricing page before relying on
+  these values; this artifact is not reconciled.
+sources:
+- https://fullenrich.com/pricing
+- https://docs.fullenrich.com
+plans:
+- id: fullenrich-free-trial
+  name: Free Trial
+  type: trial
+  description: >-
+    Free credits to test waterfall enrichment before subscribing.
+  entries:
+  - label: Trial Credits
+    name: trial_credits
+    type: fixed
+    metric: credits
+    limit: 50
+    timeFrame: once
+    geo: global
+    unit: 1
+    price: free
+    userMultiplied: false
+  elements:
+  - name: Contact Enrichment
+  - name: Reverse Email Lookup
+  - name: Account Credits
+- id: fullenrich-starter
+  name: Starter
+  type: subscription
+  description: >-
+    Entry monthly plan with a fixed credit allotment; unlimited users, credits
+    roll over for three months.
+  entries:
+  - label: Included Credits
+    name: starter_credits
+    type: fixed
+    metric: credits
+    limit: 500
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: see FullEnrich pricing page
+    userMultiplied: false
+  elements:
+  - name: Contact Enrichment
+  - name: Reverse Email Lookup
+  - name: Account Credits
+- id: fullenrich-growth
+  name: Growth
+  type: subscription
+  description: >-
+    Mid-tier monthly plan for scaling teams with a larger credit allotment.
+  entries:
+  - label: Included Credits
+    name: growth_credits
+    type: fixed
+    metric: credits
+    limit: 2000
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: see FullEnrich pricing page
+    userMultiplied: false
+  elements:
+  - name: Contact Enrichment
+  - name: Reverse Email Lookup
+  - name: Account Credits
+- id: fullenrich-pro
+  name: Pro
+  type: subscription
+  description: >-
+    High-volume monthly plan with the largest standard credit allotment.
+  entries:
+  - label: Included Credits
+    name: pro_credits
+    type: fixed
+    metric: credits
+    limit: 6000
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: see FullEnrich pricing page
+    userMultiplied: false
+  elements:
+  - name: Contact Enrichment
+  - name: Reverse Email Lookup
+  - name: Account Credits
+- id: fullenrich-enterprise
+  name: Enterprise
+  type: enterprise
+  description: >-
+    Custom pricing, volume credit commitments, and dedicated support for
+    high-volume teams. Contact FullEnrich sales.
+  entries:
+  - label: Enterprise Agreement
+    name: enterprise
+    type: flat
+    metric: contract
+    limit: -1
+    timeFrame: year
+    geo: global
+    unit: 1
+    price: contact sales
+    userMultiplied: false
+  elements:
+  - name: Custom Volume Credits
+  - name: Dedicated Support
+creditCosts:
+- item: Verified work email
+  credits: 1
+- item: Personal email
+  credits: 3
+- item: Mobile phone number
+  credits: 10
+- item: Failed lookup / landline / out-of-service number
+  credits: 0
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

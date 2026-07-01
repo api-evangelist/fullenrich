@@ -1,0 +1,72 @@
+aid: fullenrich
+name: FullEnrich
+review:
+  question: Does FullEnrich expose a documented public WebSocket API?
+  answer: false
+  date: '2026-07-01'
+  reviewer: API Evangelist
+  asyncapiSpecCreated: false
+  asyncapiScopeNote: |
+    Per current API Evangelist scope, HTTP Server-Sent Events (SSE) is in-scope
+    for AsyncAPI modeling. FullEnrich does not use SSE either; asynchronous
+    enrichment results are delivered by outbound HTTP webhook (a POST callback)
+    or by client polling of the GET results endpoint. No AsyncAPI document was
+    authored because there is no client-consumed streaming channel to model.
+findings:
+  summary: |
+    FullEnrich does not publish a documented public WebSocket API. The platform
+    exposes only REST (HTTPS) endpoints under https://app.fullenrich.com/api/v2.
+    Enrichment is asynchronous by design: a POST to /contact/enrich/bulk returns
+    an enrichment_id, and results are delivered either by an outbound HTTP
+    webhook (POST callback to a caller-supplied webhook_url when the job
+    finishes, lacks credits, or is canceled) or by polling GET
+    /contact/enrich/bulk/{enrichment_id}. There is no documented realtime,
+    bidirectional, SSE, or WebSocket (ws:// or wss://) surface.
+  transports:
+    - protocol: REST
+      scheme: https
+      baseURL: https://app.fullenrich.com/api/v2
+      documented: true
+    - protocol: Webhook
+      scheme: https
+      note: Outbound HTTP POST callback to the caller's webhook_url when an enrichment finishes, lacks credits, or is canceled. Not a client-consumed streaming transport.
+      documented: true
+    - protocol: SSE
+      scheme: https
+      documented: false
+      note: No Server-Sent Events streaming is documented.
+    - protocol: WebSocket
+      scheme: wss
+      documented: false
+      note: No WebSocket endpoint is documented anywhere in the FullEnrich API reference.
+  endpointsConfirmedRest:
+    - POST https://app.fullenrich.com/api/v2/contact/enrich/bulk
+    - GET  https://app.fullenrich.com/api/v2/contact/enrich/bulk/{enrichment_id}
+    - POST https://app.fullenrich.com/api/v2/contact/reverse/email/bulk
+    - GET  https://app.fullenrich.com/api/v2/contact/reverse/email/bulk
+    - GET  https://app.fullenrich.com/api/v2/account/credits
+    - GET  https://app.fullenrich.com/api/v2/account/keys/verify
+  versionNote: |
+    The current documented API is v2 (https://app.fullenrich.com/api/v2). The
+    catalog request referenced a v1 base path; v1 is superseded by v2, so v2 was
+    used to keep the entry accurate.
+sources:
+  - url: https://docs.fullenrich.com/
+    type: Documentation
+    note: API overview; lists Enrich, Reverse Email Lookup, and Search capabilities over REST.
+  - url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+    type: APIReference
+    note: Bulk enrichment POST; documents 60 req/min, 100 contacts/request, webhook or GET-results retrieval.
+  - url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get
+    type: APIReference
+    note: GET results by enrichment_id; all HTTPS REST, no streaming surface.
+  - url: https://docs.fullenrich.com/api/v2/general/authentication
+    type: Documentation
+    note: Bearer-token auth in the Authorization header; keys from app.fullenrich.com/app/api.
+actions:
+  asyncapiPath: null
+  apisYmlUpdated: true
+  reason: |
+    No WebSocket or SSE surface exists. Results are pushed via outbound webhook
+    or pulled by polling, both plain HTTPS REST, so no AsyncAPI document was
+    authored and the apis.yml lists only REST artifacts.

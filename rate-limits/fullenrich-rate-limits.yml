@@ -1,0 +1,66 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
+provider: FullEnrich
+providerId: fullenrich
+created: '2026-07-01'
+modified: '2026-07-01'
+reconciled: true
+tags:
+- B2B Data
+- Contact Enrichment
+- Waterfall Enrichment
+- Rate Limiting
+- Quotas
+- Throttling
+description: >-
+  FullEnrich rate-limits the bulk enrichment endpoint to 60 requests per minute.
+  Each request may contain up to 100 contacts, so the endpoint supports enriching
+  up to 6,000 contacts per minute. Enrichment is asynchronous: a POST returns an
+  enrichment_id and results are delivered by webhook or retrieved by polling the
+  GET results endpoint. Exceeding limits returns HTTP 429.
+notes: >-
+  The 60 requests-per-minute / 100 contacts-per-request limits are documented on
+  the bulk enrichment reference. Reverse email lookup and account endpoints may
+  carry their own limits; verify in the FullEnrich documentation on
+  reconciliation.
+sources:
+- https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+- https://docs.fullenrich.com
+responseCodes:
+  throttled: 429
+limits:
+- name: Bulk Enrichment Requests Per Minute
+  scope: account
+  metric: requests
+  limit: 60
+  timeFrame: minute
+  notes: The /contact/enrich/bulk endpoint can be called up to 60 times per minute.
+- name: Contacts Per Request
+  scope: request
+  metric: contacts
+  limit: 100
+  notes: Each bulk enrichment request may contain up to 100 contacts.
+- name: Contacts Per Minute (effective)
+  scope: account
+  metric: contacts
+  limit: 6000
+  timeFrame: minute
+  notes: 60 requests/minute times 100 contacts/request.
+policies:
+- name: Asynchronous Processing
+  description: >-
+    POST returns an enrichment_id immediately; results are retrieved by webhook
+    or by polling GET /contact/enrich/bulk/{enrichment_id}. Poll status until it
+    reaches FINISHED rather than tight-looping.
+- name: Backoff Strategy
+  description: >-
+    On HTTP 429, clients should back off and retry with exponential backoff and
+    jitter rather than retrying immediately.
+- name: Prefer Webhooks
+  description: >-
+    Providing a webhook_url is the recommended way to receive results and avoids
+    consuming request budget on polling.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

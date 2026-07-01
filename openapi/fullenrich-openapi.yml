@@ -1,0 +1,566 @@
+openapi: 3.0.3
+info:
+  title: FullEnrich API
+  description: >-
+    FullEnrich finds verified B2B business emails and mobile phone numbers by
+    running a waterfall across 15+ data vendors. Submit contacts by first name,
+    last name and company (domain or company name) — optionally with a LinkedIn
+    URL — for bulk enrichment, then retrieve results by polling or via webhook.
+    Credits are only consumed when data is found.
+  termsOfService: https://fullenrich.com/terms
+  contact:
+    name: FullEnrich Support
+    url: https://docs.fullenrich.com
+  version: '2.0'
+servers:
+  - url: https://app.fullenrich.com/api/v2
+    description: FullEnrich production API
+security:
+  - bearerAuth: []
+tags:
+  - name: Contact Enrichment
+    description: Submit contacts for waterfall enrichment and retrieve results.
+  - name: Reverse Email Lookup
+    description: Resolve a person and company from an email address.
+  - name: Account
+    description: Workspace credit balance and API key checks.
+paths:
+  /contact/enrich/bulk:
+    post:
+      operationId: startBulkEnrichment
+      tags:
+        - Contact Enrichment
+      summary: Start a bulk contact enrichment
+      description: >-
+        Submit up to 100 contacts for waterfall enrichment. Each contact needs
+        first_name and last_name plus either domain or company_name, or a
+        linkedin_url. Returns an enrichment_id used to retrieve results.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkEnrichmentRequest'
+      responses:
+        '200':
+          description: Enrichment job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichmentAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+    get:
+      operationId: getBulkEnrichmentByQuery
+      tags:
+        - Contact Enrichment
+      summary: Get bulk enrichment results by enrichment id
+      description: >-
+        Retrieve the results of a bulk enrichment. The enrichment_id may be
+        supplied as a path segment (/contact/enrich/bulk/{enrichment_id}) or as
+        a query parameter, depending on client convention.
+      parameters:
+        - name: enrichment_id
+          in: query
+          required: true
+          description: The enrichment_id returned when the enrichment was started.
+          schema:
+            type: string
+            format: uuid
+        - name: forceResults
+          in: query
+          required: false
+          description: Return partial results even if the enrichment is not finished.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Enrichment results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichmentResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /contact/enrich/bulk/{enrichment_id}:
+    get:
+      operationId: getBulkEnrichment
+      tags:
+        - Contact Enrichment
+      summary: Get bulk enrichment results
+      description: >-
+        Retrieve the results of a bulk enrichment by its enrichment_id. The
+        response includes the run status, credits consumed, and per-contact
+        enriched contact info and profile data.
+      parameters:
+        - name: enrichment_id
+          in: path
+          required: true
+          description: The unique identifier returned when the enrichment was started.
+          schema:
+            type: string
+            format: uuid
+        - name: forceResults
+          in: query
+          required: false
+          description: Return partial results even if the enrichment is not finished.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Enrichment results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichmentResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /contact/reverse/email/bulk:
+    post:
+      operationId: startReverseEmailLookup
+      tags:
+        - Reverse Email Lookup
+      summary: Start a bulk reverse email lookup
+      description: >-
+        Resolve a person and company from one or more email addresses. Returns
+        an enrichment_id used to retrieve results.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReverseEmailRequest'
+      responses:
+        '200':
+          description: Reverse lookup accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichmentAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+    get:
+      operationId: getReverseEmailLookup
+      tags:
+        - Reverse Email Lookup
+      summary: Get reverse email lookup results
+      description: Retrieve the result of a reverse email lookup by its enrichment_id.
+      parameters:
+        - name: enrichment_id
+          in: query
+          required: true
+          description: The enrichment_id returned when the reverse lookup was started.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Reverse lookup results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichmentResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /account/credits:
+    get:
+      operationId: getAccountCredits
+      tags:
+        - Account
+      summary: Get workspace credit balance
+      description: Returns the current balance of credits available in your workspace.
+      responses:
+        '200':
+          description: Current credit balance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCredits'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /account/keys/verify:
+    get:
+      operationId: verifyApiKey
+      tags:
+        - Account
+      summary: Verify API key
+      description: Validates that the supplied API key is active.
+      responses:
+        '200':
+          description: API key status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyVerification'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        Pass your API key from the FullEnrich dashboard as a Bearer token in the
+        Authorization header: `Authorization: Bearer YOUR_API_KEY`.
+  responses:
+    BadRequest:
+      description: Bad request or enrichment still in progress.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authorization failed (missing header or invalid API key).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PaymentRequired:
+      description: Payment required (insufficient credits).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Enrichment id not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    BulkEnrichmentRequest:
+      type: object
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: A readable identifier for this enrichment, visible in your dashboard.
+          example: My enrichment batch
+        webhook_url:
+          type: string
+          format: uri
+          description: URL that receives a POST when the enrichment finishes, lacks credits, or is canceled.
+          example: https://example.com/webhooks/fullenrich
+        webhook_events:
+          type: object
+          description: Optional per-event webhook URLs.
+          properties:
+            contact_finished:
+              type: string
+              format: uri
+              description: URL called as each individual contact finishes.
+        data:
+          type: array
+          description: Up to 100 contacts to enrich.
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/ContactInput'
+    ContactInput:
+      type: object
+      description: >-
+        A contact to enrich. Provide first_name and last_name plus either domain
+        or company_name, or provide a linkedin_url.
+      properties:
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        domain:
+          type: string
+          description: Company website domain.
+          example: acme.com
+        company_name:
+          type: string
+          example: Acme Inc
+        linkedin_url:
+          type: string
+          format: uri
+          description: LinkedIn profile URL to improve email and phone match rates.
+          example: https://www.linkedin.com/in/johndoe
+        enrich_fields:
+          type: array
+          description: Which data types to retrieve.
+          items:
+            type: string
+            enum:
+              - contact.work_emails
+              - contact.personal_emails
+              - contact.phones
+          example:
+            - contact.work_emails
+            - contact.phones
+        custom:
+          type: object
+          description: >-
+            Reference data (e.g. CRM IDs) echoed back in the result. String
+            values only; max 10 keys, up to 100 chars per value.
+          additionalProperties:
+            type: string
+    ReverseEmailRequest:
+      type: object
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: A readable identifier for this reverse lookup.
+        webhook_url:
+          type: string
+          format: uri
+        data:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                type: string
+                format: email
+                example: john.doe@acme.com
+              custom:
+                type: object
+                additionalProperties:
+                  type: string
+    EnrichmentAccepted:
+      type: object
+      properties:
+        enrichment_id:
+          type: string
+          format: uuid
+          example: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+    EnrichmentResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+            - CREATED
+            - IN_PROGRESS
+            - CANCELED
+            - CREDITS_INSUFFICIENT
+            - FINISHED
+            - RATE_LIMIT
+            - UNKNOWN
+        cost:
+          type: object
+          properties:
+            credits:
+              type: integer
+              description: Total credits consumed by this enrichment.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnrichedContact'
+    EnrichedContact:
+      type: object
+      properties:
+        input:
+          type: object
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            full_name:
+              type: string
+            company_domain:
+              type: string
+            company_name:
+              type: string
+            professional_network_url:
+              type: string
+        custom:
+          type: object
+          description: The custom object supplied in the request, echoed back unchanged.
+          additionalProperties:
+            type: string
+        contact_info:
+          $ref: '#/components/schemas/ContactInfo'
+        profile:
+          $ref: '#/components/schemas/Profile'
+    ContactInfo:
+      type: object
+      properties:
+        most_probable_work_email:
+          $ref: '#/components/schemas/EmailResult'
+        most_probable_personal_email:
+          $ref: '#/components/schemas/EmailResult'
+        most_probable_phone:
+          $ref: '#/components/schemas/PhoneResult'
+        work_emails:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailResult'
+        personal_emails:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailResult'
+        phones:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneResult'
+    EmailResult:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum:
+            - DELIVERABLE
+            - HIGH_PROBABILITY
+            - CATCH_ALL
+            - INVALID
+            - INVALID_DOMAIN
+    PhoneResult:
+      type: object
+      properties:
+        number:
+          type: string
+          description: Phone number in E.164 format.
+          example: '+14155552671'
+        region:
+          type: string
+          description: ISO country code for the number.
+          example: US
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        location:
+          type: object
+          properties:
+            country:
+              type: string
+            country_code:
+              type: string
+            city:
+              type: string
+            region:
+              type: string
+        social_profiles:
+          type: object
+          properties:
+            professional_network:
+              type: object
+              properties:
+                id:
+                  type: integer
+                url:
+                  type: string
+                handle:
+                  type: string
+                connection_count:
+                  type: integer
+        skills:
+          type: array
+          items:
+            type: string
+        employment:
+          type: object
+          properties:
+            current:
+              $ref: '#/components/schemas/Employment'
+            all:
+              type: array
+              items:
+                $ref: '#/components/schemas/Employment'
+    Employment:
+      type: object
+      properties:
+        title:
+          type: string
+        is_current:
+          type: boolean
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        company:
+          type: object
+          properties:
+            name:
+              type: string
+            domain:
+              type: string
+    AccountCredits:
+      type: object
+      properties:
+        credits:
+          type: integer
+          description: Current credit balance available in the workspace.
+          example: 4820
+    KeyVerification:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          example: true
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: error.unauthorized
+        message:
+          type: string
+          example: Invalid API key
