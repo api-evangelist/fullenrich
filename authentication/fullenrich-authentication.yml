@@ -1,0 +1,14 @@
+generated: '2026-07-11'
+method: derived
+source: openapi/fullenrich-openapi.yml
+summary:
+  types:
+  - http
+schemes:
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  description: 'Pass your API key from the FullEnrich dashboard as a Bearer token in the Authorization
+    header: `Authorization: Bearer YOUR_API_KEY`.'
+  sources:
+  - openapi/fullenrich-openapi.yml

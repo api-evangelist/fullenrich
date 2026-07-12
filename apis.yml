@@ -108,6 +108,12 @@ apis:
   description: Check the current credit balance available in your workspace before
     submitting enrichment jobs, so clients can gate spend against remaining credits.
 common:
+- type: TrustCenter
+  url: security/fullenrich-trust-center.yml
+- type: DomainSecurity
+  url: security/fullenrich-domain-security.yml
+- type: Authentication
+  url: authentication/fullenrich-authentication.yml
 - type: GitHubOrganization
   url: https://github.com/FullEnrich
 - type: LinkedIn
@@ -122,6 +128,8 @@ common:
   url: rate-limits/fullenrich-rate-limits.yml
 - type: FinOps
   url: finops/fullenrich-finops.yml
+- type: Blog
+  url: https://fullenrich.com/blog
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
