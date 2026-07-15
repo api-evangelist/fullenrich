@@ -108,6 +108,8 @@ apis:
   description: Check the current credit balance available in your workspace before
     submitting enrichment jobs, so clients can gate spend against remaining credits.
 common:
+- type: AgenticAccess
+  url: agentic-access/fullenrich-agentic-access.yml
 - type: TrustCenter
   url: security/fullenrich-trust-center.yml
 - type: DomainSecurity
