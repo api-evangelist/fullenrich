@@ -1,0 +1,86 @@
+openapi: 3.0.3
+info:
+  title: FullEnrich Account API
+  description: FullEnrich finds verified B2B business emails and mobile phone numbers by running a waterfall across 15+ data vendors. Submit contacts by first name, last name and company (domain or company name) — optionally with a LinkedIn URL — for bulk enrichment, then retrieve results by polling or via webhook. Credits are only consumed when data is found.
+  termsOfService: https://fullenrich.com/terms
+  contact:
+    name: FullEnrich Support
+    url: https://docs.fullenrich.com
+  version: '2.0'
+servers:
+- url: https://app.fullenrich.com/api/v2
+  description: FullEnrich production API
+security:
+- bearerAuth: []
+tags:
+- name: Account
+  description: Workspace credit balance and API key checks.
+paths:
+  /account/credits:
+    get:
+      operationId: getAccountCredits
+      tags:
+      - Account
+      summary: Get workspace credit balance
+      description: Returns the current balance of credits available in your workspace.
+      responses:
+        '200':
+          description: Current credit balance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCredits'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /account/keys/verify:
+    get:
+      operationId: verifyApiKey
+      tags:
+      - Account
+      summary: Verify API key
+      description: Validates that the supplied API key is active.
+      responses:
+        '200':
+          description: API key status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyVerification'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  schemas:
+    KeyVerification:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          example: true
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: error.unauthorized
+        message:
+          type: string
+          example: Invalid API key
+    AccountCredits:
+      type: object
+      properties:
+        credits:
+          type: integer
+          description: Current credit balance available in the workspace.
+          example: 4820
+  responses:
+    Unauthorized:
+      description: Authorization failed (missing header or invalid API key).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Pass your API key from the FullEnrich dashboard as a Bearer token in the Authorization header: `Authorization: Bearer YOUR_API_KEY`.'

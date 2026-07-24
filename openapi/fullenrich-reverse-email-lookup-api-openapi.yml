@@ -1,0 +1,318 @@
+openapi: 3.0.3
+info:
+  title: FullEnrich Account Reverse Email Lookup API
+  description: FullEnrich finds verified B2B business emails and mobile phone numbers by running a waterfall across 15+ data vendors. Submit contacts by first name, last name and company (domain or company name) — optionally with a LinkedIn URL — for bulk enrichment, then retrieve results by polling or via webhook. Credits are only consumed when data is found.
+  termsOfService: https://fullenrich.com/terms
+  contact:
+    name: FullEnrich Support
+    url: https://docs.fullenrich.com
+  version: '2.0'
+servers:
+- url: https://app.fullenrich.com/api/v2
+  description: FullEnrich production API
+security:
+- bearerAuth: []
+tags:
+- name: Reverse Email Lookup
+  description: Resolve a person and company from an email address.
+paths:
+  /contact/reverse/email/bulk:
+    post:
+      operationId: startReverseEmailLookup
+      tags:
+      - Reverse Email Lookup
+      summary: Start a bulk reverse email lookup
+      description: Resolve a person and company from one or more email addresses. Returns an enrichment_id used to retrieve results.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReverseEmailRequest'
+      responses:
+        '200':
+          description: Reverse lookup accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichmentAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+    get:
+      operationId: getReverseEmailLookup
+      tags:
+      - Reverse Email Lookup
+      summary: Get reverse email lookup results
+      description: Retrieve the result of a reverse email lookup by its enrichment_id.
+      parameters:
+      - name: enrichment_id
+        in: query
+        required: true
+        description: The enrichment_id returned when the reverse lookup was started.
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Reverse lookup results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichmentResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+components:
+  schemas:
+    EnrichmentResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+          - CREATED
+          - IN_PROGRESS
+          - CANCELED
+          - CREDITS_INSUFFICIENT
+          - FINISHED
+          - RATE_LIMIT
+          - UNKNOWN
+        cost:
+          type: object
+          properties:
+            credits:
+              type: integer
+              description: Total credits consumed by this enrichment.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnrichedContact'
+    EnrichmentAccepted:
+      type: object
+      properties:
+        enrichment_id:
+          type: string
+          format: uuid
+          example: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: error.unauthorized
+        message:
+          type: string
+          example: Invalid API key
+    ReverseEmailRequest:
+      type: object
+      required:
+      - name
+      - data
+      properties:
+        name:
+          type: string
+          description: A readable identifier for this reverse lookup.
+        webhook_url:
+          type: string
+          format: uri
+        data:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required:
+            - email
+            properties:
+              email:
+                type: string
+                format: email
+                example: john.doe@acme.com
+              custom:
+                type: object
+                additionalProperties:
+                  type: string
+    EnrichedContact:
+      type: object
+      properties:
+        input:
+          type: object
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            full_name:
+              type: string
+            company_domain:
+              type: string
+            company_name:
+              type: string
+            professional_network_url:
+              type: string
+        custom:
+          type: object
+          description: The custom object supplied in the request, echoed back unchanged.
+          additionalProperties:
+            type: string
+        contact_info:
+          $ref: '#/components/schemas/ContactInfo'
+        profile:
+          $ref: '#/components/schemas/Profile'
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        location:
+          type: object
+          properties:
+            country:
+              type: string
+            country_code:
+              type: string
+            city:
+              type: string
+            region:
+              type: string
+        social_profiles:
+          type: object
+          properties:
+            professional_network:
+              type: object
+              properties:
+                id:
+                  type: integer
+                url:
+                  type: string
+                handle:
+                  type: string
+                connection_count:
+                  type: integer
+        skills:
+          type: array
+          items:
+            type: string
+        employment:
+          type: object
+          properties:
+            current:
+              $ref: '#/components/schemas/Employment'
+            all:
+              type: array
+              items:
+                $ref: '#/components/schemas/Employment'
+    EmailResult:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum:
+          - DELIVERABLE
+          - HIGH_PROBABILITY
+          - CATCH_ALL
+          - INVALID
+          - INVALID_DOMAIN
+    Employment:
+      type: object
+      properties:
+        title:
+          type: string
+        is_current:
+          type: boolean
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        company:
+          type: object
+          properties:
+            name:
+              type: string
+            domain:
+              type: string
+    ContactInfo:
+      type: object
+      properties:
+        most_probable_work_email:
+          $ref: '#/components/schemas/EmailResult'
+        most_probable_personal_email:
+          $ref: '#/components/schemas/EmailResult'
+        most_probable_phone:
+          $ref: '#/components/schemas/PhoneResult'
+        work_emails:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailResult'
+        personal_emails:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailResult'
+        phones:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneResult'
+    PhoneResult:
+      type: object
+      properties:
+        number:
+          type: string
+          description: Phone number in E.164 format.
+          example: '+14155552671'
+        region:
+          type: string
+          description: ISO country code for the number.
+          example: US
+  responses:
+    NotFound:
+      description: Enrichment id not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad request or enrichment still in progress.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authorization failed (missing header or invalid API key).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Pass your API key from the FullEnrich dashboard as a Bearer token in the Authorization header: `Authorization: Bearer YOUR_API_KEY`.'
