@@ -8,7 +8,20 @@ description: FullEnrich is a B2B contact enrichment platform that finds verified
   or LinkedIn URL, submits them for bulk enrichment, and returns the most probable
   work email, personal email, and mobile phone, billing credits only when data is
   found.
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: freemium
+  onboarding: self-serve
+  trial: true
+  try_now: true
+  public: false
+  label: Freemium (free trial) · Self-serve signup
+  confidence: high
+  source:
+  - plans
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/fullenrich.png
 tags:
 - B2B Data
 - Contact Enrichment
@@ -20,93 +33,72 @@ created: '2026-07-01'
 modified: '2026-07-01'
 specificationVersion: '0.19'
 apis:
-- aid: fullenrich:fullenrich-contact-enrichment-api
-  name: FullEnrich Contact Enrichment API
-  tags:
-  - Contact Enrichment
-  - Email Finder
-  - Phone Finder
-  - Waterfall
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+- aid: fullenrich:fullenrich-account-api
+  name: FullEnrich Account API
+  description: Workspace credit balance and API key checks.
   humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
   baseURL: https://app.fullenrich.com/api/v2
-  properties:
-  - url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
-    type: Documentation
-  - url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
-    type: APIReference
-  - url: openapi/fullenrich-openapi.yml
-    type: OpenAPI
-  - url: collections/fullenrich.postman_collection.json
-    type: PostmanCollection
-  - url: collections/fullenrich.opencollection.json
-    type: OpenCollection
-  description: Submit up to 100 contacts per request for bulk waterfall enrichment
-    by first name, last name, and company domain or company name (LinkedIn URL
-    optional), then poll or receive a webhook to retrieve the most probable work
-    email, personal email, and mobile phone plus full enrichment status.
-- aid: fullenrich:fullenrich-enrichment-results-api
-  name: FullEnrich Enrichment Results API
-  tags:
-  - Results
-  - Polling
-  - Enrichment
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get
-  baseURL: https://app.fullenrich.com/api/v2
-  properties:
-  - url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get
-    type: Documentation
-  - url: openapi/fullenrich-openapi.yml
-    type: OpenAPI
-  - url: collections/fullenrich.postman_collection.json
-    type: PostmanCollection
-  - url: collections/fullenrich.opencollection.json
-    type: OpenCollection
-  description: Retrieve the results of a bulk enrichment by its enrichment_id,
-    returning the run status, credits consumed, and per-contact enriched data
-    including emails with deliverability status and phones in E.164 format.
-- aid: fullenrich:fullenrich-reverse-email-lookup-api
-  name: FullEnrich Reverse Email Lookup API
-  tags:
-  - Reverse Email
-  - Identity Resolution
-  - Enrichment
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.fullenrich.com/
-  baseURL: https://app.fullenrich.com/api/v2
-  properties:
-  - url: https://docs.fullenrich.com/
-    type: Documentation
-  - url: openapi/fullenrich-openapi.yml
-    type: OpenAPI
-  - url: collections/fullenrich.postman_collection.json
-    type: PostmanCollection
-  - url: collections/fullenrich.opencollection.json
-    type: OpenCollection
-  description: Resolve a person and company from an email address in bulk, then
-    retrieve the identified profile and contact information by the reverse lookup's
-    enrichment_id.
-- aid: fullenrich:fullenrich-account-credits-api
-  name: FullEnrich Account Credits API
   tags:
   - Account
-  - Credits
-  - Billing
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.fullenrich.com/
-  baseURL: https://app.fullenrich.com/api/v2
   properties:
-  - url: https://docs.fullenrich.com/
-    type: Documentation
-  - url: openapi/fullenrich-openapi.yml
-    type: OpenAPI
-  - url: collections/fullenrich.postman_collection.json
-    type: PostmanCollection
-  - url: collections/fullenrich.opencollection.json
-    type: OpenCollection
-  description: Check the current credit balance available in your workspace before
-    submitting enrichment jobs, so clients can gate spend against remaining credits.
+  - type: OpenAPI
+    url: openapi/fullenrich-account-api-openapi.yml
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: PostmanCollection
+    url: collections/fullenrich.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich.opencollection.json
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get
+  - type: Documentation
+    url: https://docs.fullenrich.com/
+- aid: fullenrich:fullenrich-contact-enrichment-api
+  name: FullEnrich Contact Enrichment API
+  description: Submit contacts for waterfall enrichment and retrieve results.
+  humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  baseURL: https://app.fullenrich.com/api/v2
+  tags:
+  - Contact Enrichment
+  properties:
+  - type: OpenAPI
+    url: openapi/fullenrich-contact-enrichment-api-openapi.yml
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: PostmanCollection
+    url: collections/fullenrich.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich.opencollection.json
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get
+  - type: Documentation
+    url: https://docs.fullenrich.com/
+- aid: fullenrich:fullenrich-reverse-email-lookup-api
+  name: FullEnrich Reverse Email Lookup API
+  description: Resolve a person and company from an email address.
+  humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  baseURL: https://app.fullenrich.com/api/v2
+  tags:
+  - Reverse Email Lookup
+  properties:
+  - type: OpenAPI
+    url: openapi/fullenrich-reverse-email-lookup-api-openapi.yml
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: PostmanCollection
+    url: collections/fullenrich.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich.opencollection.json
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get
+  - type: Documentation
+    url: https://docs.fullenrich.com/
 common:
 - type: AgenticAccess
   url: agentic-access/fullenrich-agentic-access.yml
