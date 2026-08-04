@@ -1,0 +1,18 @@
+{
+  "provider": "fullenrich",
+  "sources": [
+    "fullenrich-account-api-openapi.yml",
+    "fullenrich-contact-enrichment-api-openapi.yml",
+    "fullenrich-reverse-email-lookup-api-openapi.yml"
+  ],
+  "outputs": [
+    "fullenrich-account-api-openapi.yml",
+    "fullenrich-contact-enrichment-api-openapi.yml",
+    "fullenrich-reverse-email-lookup-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}
