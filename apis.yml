@@ -3,11 +3,14 @@ url: https://raw.githubusercontent.com/api-evangelist/fullenrich/refs/heads/main
 name: FullEnrich
 kind: company
 description: FullEnrich is a B2B contact enrichment platform that finds verified
-  business emails and mobile phone numbers by running a waterfall across 15+ data
-  vendors. Its API accepts contacts by name plus company (domain or company name)
-  or LinkedIn URL, submits them for bulk enrichment, and returns the most probable
-  work email, personal email, and mobile phone, billing credits only when data is
-  found.
+  business emails, personal emails and mobile phone numbers by running a waterfall
+  across 25+ data vendors, billing credits only when data is found and passes
+  verification. Its v2 REST API covers four surfaces — asynchronous bulk contact
+  enrichment, bulk reverse email lookup, and synchronous people/company search and
+  lookup across 800M people and 50M companies. Alongside the REST API it operates a
+  first-party remote MCP server with 13 tools, publishes nine MIT-licensed Agent
+  Skills, serves an A2A agent card, and maintains a machine-readable pricing
+  document written for AI agents to read.
 accessModel:
   pricing: freemium
   onboarding: self-serve
@@ -19,7 +22,7 @@ accessModel:
   source:
   - plans
   - authentication
-  generated: '2026-07-22'
+  generated: '2026-08-14'
   method: derived
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/fullenrich.png
 tags:
@@ -29,101 +32,233 @@ tags:
 - Phone Finder
 - Waterfall Enrichment
 - Sales Intelligence
+- People Search
+- Company Search
+- Reverse Email Lookup
+- Agent Ready
 created: '2026-07-01'
-modified: '2026-07-01'
+modified: '2026-08-14'
 specificationVersion: '0.19'
 apis:
-- aid: fullenrich:fullenrich-account-api
-  name: FullEnrich Account API
-  description: Workspace credit balance and API key checks.
-  humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
-  baseURL: https://app.fullenrich.com/api/v2
-  tags:
-  - Account
-  properties:
-  - type: OpenAPI
-    url: openapi/fullenrich-account-api-openapi.yml
-  - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
-  - type: APIReference
-    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
-  - type: PostmanCollection
-    url: collections/fullenrich.postman_collection.json
-  - type: OpenCollection
-    url: collections/fullenrich.opencollection.json
-  - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get
-  - type: Documentation
-    url: https://docs.fullenrich.com/
 - aid: fullenrich:fullenrich-contact-enrichment-api
   name: FullEnrich Contact Enrichment API
-  description: Submit contacts for waterfall enrichment and retrieve results.
+  description: Submit up to 100 contacts per request for asynchronous waterfall
+    enrichment across 25+ data sources, then collect the most probable work email,
+    personal email and mobile phone by webhook or by polling the results endpoint.
   humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
   baseURL: https://app.fullenrich.com/api/v2
   tags:
   - Contact Enrichment
+  - Email Finder
+  - Phone Finder
+  - Waterfall Enrichment
   properties:
   - type: OpenAPI
     url: openapi/fullenrich-contact-enrichment-api-openapi.yml
+  - type: Overlay
+    url: overlays/fullenrich-contact-enrichment-api-overlay.yaml
   - type: Documentation
     url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
   - type: APIReference
     url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
   - type: PostmanCollection
-    url: collections/fullenrich.postman_collection.json
+    url: collections/fullenrich-contact-enrichment-api.postman_collection.json
   - type: OpenCollection
-    url: collections/fullenrich.opencollection.json
-  - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get
-  - type: Documentation
-    url: https://docs.fullenrich.com/
+    url: collections/fullenrich-contact-enrichment-api.opencollection.json
 - aid: fullenrich:fullenrich-reverse-email-lookup-api
   name: FullEnrich Reverse Email Lookup API
-  description: Resolve a person and company from an email address.
-  humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  description: Resolve the person and company behind one or more email addresses in
+    bulk, asynchronously, returning the full profile and employment history.
+  humanURL: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/post
   baseURL: https://app.fullenrich.com/api/v2
   tags:
   - Reverse Email Lookup
+  - Identity Resolution
   properties:
   - type: OpenAPI
     url: openapi/fullenrich-reverse-email-lookup-api-openapi.yml
+  - type: Overlay
+    url: overlays/fullenrich-reverse-email-lookup-api-overlay.yaml
   - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/post
   - type: APIReference
-    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/get
   - type: PostmanCollection
-    url: collections/fullenrich.postman_collection.json
+    url: collections/fullenrich-reverse-email-lookup-api.postman_collection.json
   - type: OpenCollection
-    url: collections/fullenrich.opencollection.json
+    url: collections/fullenrich-reverse-email-lookup-api.opencollection.json
+- aid: fullenrich:fullenrich-search-api
+  name: FullEnrich Search API
+  description: Synchronously search 800M people and 50M companies with structured
+    filters across role, seniority, function, industry, location, company size and
+    more. Values within a field are OR'd; fields are AND'd.
+  humanURL: https://docs.fullenrich.com/api/v2/people/search/post
+  baseURL: https://app.fullenrich.com/api/v2
+  tags:
+  - People Search
+  - Company Search
+  - Sales Intelligence
+  properties:
+  - type: OpenAPI
+    url: openapi/fullenrich-search-api-openapi.yml
+  - type: Overlay
+    url: overlays/fullenrich-search-api-overlay.yaml
   - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get
+    url: https://docs.fullenrich.com/api/v2/general/intro-search
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/people/search/post
   - type: Documentation
-    url: https://docs.fullenrich.com/
+    url: https://docs.fullenrich.com/api/v2/general/filtering-logic-explained
+  - type: Vocabulary
+    url: https://docs.fullenrich.com/api/v2/general/enums
+- aid: fullenrich:fullenrich-lookup-api
+  name: FullEnrich Lookup API
+  description: Look up a single best-matching person or company from deterministic
+    identifiers — professional network URL or ID, company domain, or full name plus
+    a company identifier.
+  humanURL: https://docs.fullenrich.com/api/v2/people/lookup/post
+  baseURL: https://app.fullenrich.com/api/v2
+  tags:
+  - Lookup
+  - Identity Resolution
+  properties:
+  - type: OpenAPI
+    url: openapi/fullenrich-lookup-api-openapi.yml
+  - type: Overlay
+    url: overlays/fullenrich-lookup-api-overlay.yaml
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/people/lookup/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/company/lookup/post
+- aid: fullenrich:fullenrich-account-api
+  name: FullEnrich Account API
+  description: Check the workspace credit balance before spending, and validate that
+    an API key is active. Both operations are free.
+  humanURL: https://docs.fullenrich.com/api/v2/account/credits/get
+  baseURL: https://app.fullenrich.com/api/v2
+  tags:
+  - Account
+  - Credits
+  - Billing
+  properties:
+  - type: OpenAPI
+    url: openapi/fullenrich-account-api-openapi.yml
+  - type: Overlay
+    url: overlays/fullenrich-account-api-overlay.yaml
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/account/credits/get
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/account/keys/verify/get
+  - type: PostmanCollection
+    url: collections/fullenrich-account-api.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich-account-api.opencollection.json
+- aid: fullenrich:fullenrich-mcp-server
+  name: FullEnrich MCP Server
+  description: First-party remote Model Context Protocol server exposing 13 tools for
+    B2B contact and company search, waterfall enrichment, and CSV/JSON export.
+    Streamable HTTP transport with browser OAuth against a FullEnrich account.
+  humanURL: https://help.fullenrich.com/en/articles/14190120-mcp-server
+  baseURL: https://mcp.fullenrich.com/mcp
+  tags:
+  - MCP
+  - Agent Ready
+  - Contact Enrichment
+  properties:
+  - type: MCPServer
+    url: mcp/fullenrich-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/fullenrich-tool-crosswalk.yml
+  - type: Documentation
+    url: mcp/fullenrich-mcp-documentation.md
+  - type: Documentation
+    url: https://help.fullenrich.com/en/articles/14190120-mcp-server
 common:
-- type: AgenticAccess
-  url: agentic-access/fullenrich-agentic-access.yml
-- type: TrustCenter
-  url: security/fullenrich-trust-center.yml
-- type: DomainSecurity
-  url: security/fullenrich-domain-security.yml
+- type: OpenAPI
+  url: openapi/_original/fullenrich-openapi.yml
+- type: MCPServer
+  url: mcp/fullenrich-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/fullenrich-tool-crosswalk.yml
+- type: AgentCard
+  url: a2a/fullenrich-a2a.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: LLMsTxt
+  url: llms/fullenrich-llms.txt
+- type: WellKnown
+  url: well-known/fullenrich-well-known.yml
 - type: Authentication
   url: authentication/fullenrich-authentication.yml
-- type: GitHubOrganization
-  url: https://github.com/FullEnrich
-- type: LinkedIn
-  url: https://www.linkedin.com/company/fullenrich
-- type: Website
-  url: https://fullenrich.com
-- type: Documentation
-  url: https://docs.fullenrich.com
+- type: OAuthScopes
+  url: scopes/fullenrich-scopes.yml
+- type: Conventions
+  url: conventions/fullenrich-conventions.yml
+- type: ErrorCatalog
+  url: errors/fullenrich-problem-types.yml
+- type: DataModel
+  url: data-model/fullenrich-data-model.yml
+- type: Webhooks
+  url: asyncapi/fullenrich-webhooks.yml
+- type: Lifecycle
+  url: lifecycle/fullenrich-lifecycle.yml
+- type: StatusPage
+  url: https://status.fullenrich.com
+- type: Sandbox
+  url: sandbox/fullenrich-sandbox.yml
+- type: Packages
+  url: packages/fullenrich-packages.yml
+- type: Conformance
+  url: conformance/fullenrich-conformance.yml
+- type: Compliance
+  url: https://fullenrich.com/trust
+- type: TrustCenter
+  url: security/fullenrich-trust-center.yml
+- type: Security
+  url: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/SECURITY.md
+- type: VulnerabilityDisclosure
+  url: security/fullenrich-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/fullenrich-domain-security.yml
+- type: AgenticAccess
+  url: agentic-access/fullenrich-agentic-access.yml
 - type: Plans
   url: plans/fullenrich-plans-pricing.yml
 - type: RateLimits
   url: rate-limits/fullenrich-rate-limits.yml
 - type: FinOps
   url: finops/fullenrich-finops.yml
+- type: DeveloperPortal
+  url: https://docs.fullenrich.com
+- type: Documentation
+  url: https://docs.fullenrich.com
+- type: APIReference
+  url: https://docs.fullenrich.com/api/v2/general/introduction
+- type: GettingStarted
+  url: https://docs.fullenrich.com/api/v2/implement-in-product/getting-started
+- type: Support
+  url: https://help.fullenrich.com
 - type: Blog
   url: https://fullenrich.com/blog
+- type: GitHubOrganization
+  url: https://github.com/FullEnrich
+- type: LinkedIn
+  url: https://www.linkedin.com/company/fullenrich
+- type: Website
+  url: https://fullenrich.com
+- type: Pricing
+  url: https://fullenrich.com/pricing
+- type: SignUp
+  url: https://app.fullenrich.com/app/signUp
+- type: TermsOfService
+  url: https://fullenrich.com/tos
+- type: PrivacyPolicy
+  url: https://fullenrich.com/privacy-policy
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
+x-enrichment:
+  date: '2026-08-14'
+  status: enriched
+  artifacts_added: 38
+  pass: local-v1
