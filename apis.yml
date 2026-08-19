@@ -38,7 +38,7 @@ tags:
 - Agent Ready
 created: '2026-07-01'
 modified: '2026-08-14'
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 apis:
 - aid: fullenrich:fullenrich-contact-enrichment-api
   name: FullEnrich Contact Enrichment API
