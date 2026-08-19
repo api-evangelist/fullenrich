@@ -1,0 +1,46 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "FullEnrich Account API",
+    "version": "2.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Account",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get workspace credit balance",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://app.fullenrich.com/api/v2/account/credits"
+          },
+          "docs": "Returns the current balance of credits available in your workspace."
+        },
+        {
+          "info": {
+            "name": "Verify API key",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://app.fullenrich.com/api/v2/account/keys/verify"
+          },
+          "docs": "Validates that the supplied API key is active."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -3,8 +3,11 @@ specificationVersion: '0.1'
 schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
 provider: FullEnrich
 providerId: fullenrich
+generated: '2026-08-14'
+method: searched
+source: https://docs.fullenrich.com/api/v2/general/ratelimit
 created: '2026-07-01'
-modified: '2026-07-01'
+modified: '2026-08-14'
 reconciled: true
 tags:
 - B2B Data
@@ -14,53 +17,87 @@ tags:
 - Quotas
 - Throttling
 description: >-
-  FullEnrich rate-limits the bulk enrichment endpoint to 60 requests per minute.
-  Each request may contain up to 100 contacts, so the endpoint supports enriching
-  up to 6,000 contacts per minute. Enrichment is asynchronous: a POST returns an
-  enrichment_id and results are delivered by webhook or retrieved by polling the
-  GET results endpoint. Exceeding limits returns HTTP 429.
+  FullEnrich applies one account-wide limit of 60 API calls per minute across ALL
+  endpoints — Enrich, Reverse Email Lookup and Search alike. Bulk endpoints accept
+  up to 100 contacts per call, so the effective throughput is 6,000 contacts per
+  minute. Each workspace additionally has a queue of 100 concurrent enrichments and
+  100 concurrent reverse email lookups; the Search API is synchronous and does not
+  use a queue. Exceeding the limit returns HTTP 429.
 notes: >-
-  The 60 requests-per-minute / 100 contacts-per-request limits are documented on
-  the bulk enrichment reference. Reverse email lookup and account endpoints may
-  carry their own limits; verify in the FullEnrich documentation on
-  reconciliation.
+  The published limit is a prose number only. NO rate-limit response headers are
+  documented — no RateLimit-*, no X-RateLimit-*, no Retry-After — so a client
+  cannot read its remaining budget from a response and must pace locally and back
+  off blindly on 429. This is the single largest agent-readiness gap on the REST
+  surface. Technology partners can request higher limits and larger queues.
 sources:
-- https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
-- https://docs.fullenrich.com
+- https://docs.fullenrich.com/api/v2/general/ratelimit
+- https://docs.fullenrich.com/api/v2/implement-in-product/volume
+- https://docs.fullenrich.com/api/v2/general/webhooks
+
 responseCodes:
   throttled: 429
+
+responseHeaders:
+  published: false
+  limit_header: null
+  remaining_header: null
+  reset_header: null
+  retry_after: null
+  note: >-
+    Confirmed absent from the documentation and from the OpenAPI — no 429 response
+    in openapi/_original/fullenrich-openapi.yml declares any headers.
+
+limit_count: 4
 limits:
-- name: Bulk Enrichment Requests Per Minute
+- name: API Calls Per Minute
   scope: account
   metric: requests
   limit: 60
   timeFrame: minute
-  notes: The /contact/enrich/bulk endpoint can be called up to 60 times per minute.
-- name: Contacts Per Request
+  appliesTo: [Enrich, Reverse Email Lookup, Search, Lookup, Account]
+  notes: One shared budget across every endpoint — polling for results spends the same budget as submitting work.
+- name: Contacts Per Bulk Request
   scope: request
   metric: contacts
   limit: 100
-  notes: Each bulk enrichment request may contain up to 100 contacts.
+  appliesTo: [Enrich, Reverse Email Lookup]
+  notes: Each bulk enrichment or reverse lookup request may carry up to 100 contacts.
 - name: Contacts Per Minute (effective)
   scope: account
   metric: contacts
   limit: 6000
   timeFrame: minute
   notes: 60 requests/minute times 100 contacts/request.
+- name: Concurrent Queue Size
+  scope: workspace
+  metric: jobs
+  limit: 100
+  notes: >-
+    Default workspace queue of 100 concurrent enrichments AND 100 concurrent
+    reverse email lookups (tracked separately). The Search API is synchronous and
+    bypasses the queue entirely.
+
 policies:
 - name: Asynchronous Processing
   description: >-
-    POST returns an enrichment_id immediately; results are retrieved by webhook
-    or by polling GET /contact/enrich/bulk/{enrichment_id}. Poll status until it
-    reaches FINISHED rather than tight-looping.
+    POST returns an enrichment_id immediately; results arrive by webhook or are
+    retrieved with GET /contact/enrich/bulk/{enrichment_id}. Typical processing is
+    30-90 seconds per contact.
+- name: Prefer Webhooks Over Polling
+  description: >-
+    Webhooks are the documented recommendation. Polling consumes the same 60/min
+    budget; the docs say never poll more than once every 5-10 minutes and never
+    every few seconds.
 - name: Backoff Strategy
   description: >-
-    On HTTP 429, clients should back off and retry with exponential backoff and
-    jitter rather than retrying immediately.
-- name: Prefer Webhooks
+    On 429, back off with exponential backoff and jitter. Because no Retry-After is
+    returned, the client must choose its own interval.
+- name: Partner Uplift
   description: >-
-    Providing a webhook_url is the recommended way to receive results and avoids
-    consuming request budget on polling.
+    Technology partners can request a higher rate limit and a larger parallel queue
+    by contacting FullEnrich; custom rate limits and a priority queue are an
+    Enterprise plan feature.
+
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com

@@ -1,74 +1,24 @@
-generated: '2026-07-15'
+generated: '2026-08-14'
 method: generated
-source: openapi/fullenrich-openapi.yml
+source: openapi/fullenrich-account-api-openapi.yml, openapi/fullenrich-contact-enrichment-api-openapi.yml,
+  openapi/fullenrich-lookup-api-openapi.yml, openapi/fullenrich-reverse-email-lookup-api-openapi.yml,
+  openapi/fullenrich-search-api-openapi.yml
 description: Recommended x-agentic-access execution contracts, classified heuristically from
   the OpenAPI. A governance starting point for exposing this API to AI agents — review and bind
   audience per deployment. See research/curity/agentic-governance/.
 summary:
-  operations: 7
+  operations: 10
   by_action_class:
-    acting: 2
-    connected: 5
+    connected: 4
+    acting: 6
   by_consequence:
-    write: 2
-    read: 5
+    read: 4
+    write: 6
   human_in_the_loop_required: 0
 operations:
-- path: /contact/enrich/bulk
-  method: post
-  operationId: startBulkEnrichment
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /contact/enrich/bulk
+- path: /account/keys/verify
   method: get
-  operationId: getBulkEnrichmentByQuery
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /contact/enrich/bulk/{enrichment_id}
-  method: get
-  operationId: getBulkEnrichment
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /contact/reverse/email/bulk
-  method: post
-  operationId: startReverseEmailLookup
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /contact/reverse/email/bulk
-  method: get
-  operationId: getReverseEmailLookup
+  operationId: checkKey
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -86,9 +36,25 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /account/keys/verify
+- path: /contact/enrich/bulk
+  method: post
+  operationId: postContactBulkEnrich
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /contact/enrich/bulk/{enrichment_id}
   method: get
-  operationId: verifyApiKey
+  operationId: GetContactBulkEnrichByID
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -96,3 +62,93 @@ operations:
     token:
       max-ttl: 3600
     audit: none
+- path: /people/lookup
+  method: post
+  operationId: postPeopleLookup
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /company/lookup
+  method: post
+  operationId: postCompanyLookup
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /contact/reverse/email/bulk
+  method: post
+  operationId: postContactBulkReverseEmail
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /contact/reverse/email/bulk/{enrichment_id}
+  method: get
+  operationId: GetContactBulkReverseEmailByID
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /people/search
+  method: post
+  operationId: postPeopleSearch
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /company/search
+  method: post
+  operationId: postCompanySearch
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required

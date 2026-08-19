@@ -1,0 +1,135 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  https://github.com/FullEnrich/fullenrich-skills (nine SKILL.md files, MIT
+  licensed, v1.0.3) and
+  https://docs.fullenrich.com/.well-known/agent-skills/full-enrich/skill.md
+  (referenced by the A2A agent card).
+description: >-
+  Every skill here is PROVIDER-PUBLISHED and saved verbatim — API Evangelist
+  authored none of them. FullEnrich ships an installable Claude plugin whose nine
+  Agent Skills layer workflow guidance, confirmation flows and credit-safety rules
+  on top of its MCP server, plus a tenth product-summary skill served from the
+  documentation host and advertised by its A2A agent card.
+license: MIT
+plugin:
+  name: fullenrich
+  version: 1.0.3
+  repository: https://github.com/FullEnrich/fullenrich-skills
+  marketplace: /plugin marketplace add FullEnrich/fullenrich-skills
+  auto_connects_mcp: https://mcp.fullenrich.com/mcp
+runtime:
+  api: mcp/fullenrich-mcp.yml
+  endpoint: https://mcp.fullenrich.com/mcp
+  note: >-
+    These skills drive the MCP tool surface, not the REST API directly. Tool-to-REST
+    bindings are recorded in mcp/fullenrich-tool-crosswalk.yml.
+
+skills:
+  - file: fullenrich-full-enrich.md
+    id: full-enrich
+    name: Full Enrich
+    level: overview
+    source: https://docs.fullenrich.com/.well-known/agent-skills/full-enrich/skill.md
+    api: openapi/_original/fullenrich-openapi.yml
+    description: >-
+      Product-summary skill for enriching B2B contact data, reverse email lookup,
+      and searching contacts/companies by filter. Referenced by the A2A agent card
+      at docs.fullenrich.com/.well-known/agent-card.json.
+    estimated_cost: varies by data found
+
+  - file: fullenrich-full-prospecting.md
+    id: full-prospecting
+    name: Full Prospecting
+    level: Beginner
+    source: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/skills/full-prospecting/SKILL.md
+    tools: [search_people, enrich_bulk, get_enrichment_results]
+    description: Find and enrich B2B contacts matching an ICP.
+    estimated_cost: ~1 credit per email found, ~10 per phone found
+
+  - file: fullenrich-full-csv.md
+    id: full-csv
+    name: Full CSV
+    level: Beginner
+    source: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/skills/full-csv/SKILL.md
+    tools: [enrich_bulk, get_enrichment_results, export_enrichment_results]
+    description: Parse an uploaded CSV of contacts, bulk enrich with confirmation, present results.
+    estimated_cost: ~1 credit per email found, ~10 per phone found, per contact
+
+  - file: fullenrich-full-meeting.md
+    id: full-meeting
+    name: Full Meeting Prep
+    level: Beginner
+    source: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/skills/full-meeting/SKILL.md
+    tools: [search_people, enrich_bulk]
+    description: Build a structured pre-meeting brief on a person from profile and company context.
+    estimated_cost: 0 credits if already enriched; ~1 credit if enrichment needed
+
+  - file: fullenrich-full-crm.md
+    id: full-crm
+    name: Full CRM
+    level: Beginner
+    source: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/skills/full-crm/SKILL.md
+    tools: [export_enrichment_results]
+    description: >-
+      Move already-enriched contacts into a CRM via a separately connected CRM MCP.
+      Explicitly states FullEnrich's own MCP does not write CRM records.
+    estimated_cost: 0 credits
+
+  - file: fullenrich-full-outreach.md
+    id: full-outreach
+    name: Full Outreach
+    level: Intermediate
+    source: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/skills/full-outreach/SKILL.md
+    tools: [search_people, enrich_bulk]
+    description: Draft hyper-personalized cold emails, LinkedIn DMs, and call scripts from enriched profile data.
+    estimated_cost: 0 credits when contacts are already enriched
+
+  - file: fullenrich-full-org.md
+    id: full-org
+    name: Full Org
+    level: Intermediate
+    source: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/skills/full-org/SKILL.md
+    tools: [search_people, search_companies, export_contacts]
+    description: Map a company's team structure into an org chart and recommend who to contact.
+    estimated_cost: search previews free; export and enrichment cost credits
+
+  - file: fullenrich-full-lookalike.md
+    id: full-lookalike
+    name: Full Lookalike
+    level: Intermediate
+    source: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/skills/full-lookalike/SKILL.md
+    tools: [search_people, export_contacts]
+    description: Find people similar to a source profile — same role, seniority, industry, company size.
+    estimated_cost: search previews free; export and enrichment cost credits
+
+  - file: fullenrich-full-talent.md
+    id: full-talent
+    name: Full Talent
+    level: Intermediate
+    source: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/skills/full-talent/SKILL.md
+    tools: [search_people, enrich_bulk, get_enrichment_results]
+    description: Source, enrich, qualify and rank candidates for a role.
+    estimated_cost: ~11 credits per candidate maximum (email + phone)
+
+  - file: fullenrich-full-sequence.md
+    id: full-sequence
+    name: Full Sequence
+    level: Advanced
+    source: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/skills/full-sequence/SKILL.md
+    tools: []
+    description: >-
+      Design and deploy a multi-touch outreach sequence, then push it to the user's
+      connected sequencer. Requires a final deployment confirmation before any
+      sequencer mutation (added in v1.0.3).
+    estimated_cost: 0 credits
+
+skill_count: 10
+
+safety_posture: >-
+  FullEnrich builds credit-spend safety into the skills rather than into OAuth
+  scopes: the documented pattern is preview -> show balance -> confirm -> execute
+  -> report, and v1.0.3 added explicit opt-out/suppression/do-not-contact handling
+  in outreach workflows plus a mandatory confirmation before sequencer mutations.
+  Because the MCP server exposes a single `api:mcp` scope, these guardrails are
+  conventions the client must honor, not authorization boundaries.

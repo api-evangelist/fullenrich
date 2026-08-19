@@ -1,0 +1,170 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  https://docs.fullenrich.com/api/v2/general/authentication,
+  /general/webhooks, /general/credit, /general/ratelimit, /general/email-status,
+  /implement-in-product/* — plus derivation from
+  openapi/_original/fullenrich-openapi.yml.
+description: >-
+  How the FullEnrich REST API behaves across every operation: authentication,
+  the asynchronous job pattern, pagination, request tracing, versioning, the error
+  envelope, rate-limit signaling, and webhook verification. These are the runtime
+  semantics OpenAPI does not fully express.
+
+base_url: https://app.fullenrich.com/api/v2
+api_style: REST over HTTPS, JSON requests, JSON responses
+
+authentication:
+  scheme: Bearer token — workspace API key in the Authorization header
+  header: 'Authorization: Bearer <API_KEY>'
+  key_source: https://app.fullenrich.com/app/api
+  docs: https://docs.fullenrich.com/api/v2/general/authentication
+  detail: authentication/fullenrich-authentication.yml
+
+idempotency:
+  supported: false
+  mechanism: null
+  detail: >-
+    FullEnrich publishes NO idempotency key. There is no Idempotency-Key header or
+    parameter in the OpenAPI or the documentation, and no documented replay
+    semantics. Re-POSTing the same batch creates a NEW enrichment with a new
+    enrichment_id.
+  adjacent_but_different:
+    name: credit deduplication
+    detail: >-
+      Re-enriching a contact already enriched within the last 3 months returns the
+      stored result and costs 0 credits. This limits the FINANCIAL cost of a
+      duplicate call, but it is not idempotency: a second identical request still
+      creates a separate enrichment record with a different enrichment_id, and the
+      caller cannot safely retry a request whose response was lost. Deduplication
+      also fails when input fields differ at all, within the same bulk, or when two
+      identical requests run concurrently.
+  agent_consequence: >-
+    An agent that times out mid-POST cannot determine whether the batch was
+    accepted. The safe recovery is to poll rather than retry, since a retry
+    produces a second job.
+  docs: https://docs.fullenrich.com/api/v2/general/credit
+
+async_jobs:
+  pattern: submit-then-collect
+  applies_to: [postContactBulkEnrich, postContactBulkReverseEmail]
+  submit_returns: '{ "enrichment_id": "<uuid>" }'
+  typical_duration: 30-90 seconds per contact
+  collection:
+    preferred: webhook callback (webhook_url)
+    fallback: 'GET /contact/enrich/bulk/{enrichment_id}'
+  polling_guidance: >-
+    Explicitly discouraged. The docs say do not poll more often than every 5-10
+    minutes and never every few seconds, because polling consumes the same 60
+    req/min budget as submission.
+  statuses: [CREATED, IN_PROGRESS, CANCELED, CREDITS_INSUFFICIENT, FINISHED, RATE_LIMIT, UNKNOWN]
+  partial_results: 'forceResults=true returns partial results before the job finishes.'
+  synchronous_exception: >-
+    /people/search, /company/search, /people/lookup and /company/lookup are
+    synchronous — they return results directly and use no job queue.
+
+pagination:
+  style: offset+limit with a cursor escape hatch
+  applies_to: [postPeopleSearch, postCompanySearch]
+  request_params:
+    offset: Numeric offset into the result set.
+    limit: Page size.
+    search_after: Cursor token for deep pagination beyond the offset window.
+  response_fields:
+    people: array of results (search people)
+    companies: array of results (search company)
+  note: >-
+    No has_more / total / next-cursor field is documented in the response schema,
+    so a client cannot tell from the payload alone whether more results exist —
+    it must infer exhaustion from a short page.
+
+filtering:
+  style: structured filter arrays on the request body
+  logic: >-
+    Multiple values within the same field are OR'd; different fields are combined
+    with AND. Documented at /api/v2/general/filtering-logic-explained.
+  vocabularies:
+    detail: >-
+      Industry, seniority and function/subfunction filters take controlled codes.
+      The enum list is published as human documentation
+      (/api/v2/general/enums) and as MCP reference tools (list_industries,
+      list_seniorities, list_functions_subfunctions) — but NOT as a REST endpoint.
+
+metadata:
+  supported: true
+  mechanism: '`custom` object on each contact in the request'
+  limits: String values only; max 10 keys; up to 100 characters per value.
+  behavior: >-
+    Echoed back unchanged in the result and in the webhook payload, so callers can
+    correlate a result to a CRM record. Non-string values return an error.
+  excluded_from: credit deduplication (custom fields do not affect dedup)
+
+request_tracing:
+  request_id_header: null
+  detail: >-
+    No request-id or correlation header is documented on responses. Correlation is
+    done application-side with the enrichment_id and the `custom` object.
+
+versioning:
+  scheme: uri-path
+  current: v2
+  mechanism: Version is a path segment — https://app.fullenrich.com/api/v2
+  version_header: null
+  detail: lifecycle/fullenrich-lifecycle.yml
+
+error_envelope:
+  media_type: application/json
+  rfc9457: false
+  shape: '{ "code": "<string>", "message": "<string>" }'
+  detail: errors/fullenrich-problem-types.yml
+  gap: >-
+    The `code` values are not enumerated anywhere in the spec or the docs; only the
+    shape is published. There is no error-code reference page.
+
+rate_limits:
+  limit: 60 requests per minute, all endpoints
+  batch_size: up to 100 contacts per bulk request (6,000 contacts/minute effective)
+  queue: 100 concurrent enrichments + 100 concurrent reverse lookups per workspace
+  signal_status: 429
+  response_headers: null
+  gap: >-
+    No RateLimit-* / X-RateLimit-* / Retry-After headers are documented. A client
+    cannot read remaining budget from a response — it must count locally and back
+    off blindly on 429.
+  detail: rate-limits/fullenrich-rate-limits.yml
+
+webhooks:
+  signing_header: X-Signature-SHA1
+  verification: HMAC-SHA1 over the raw request body, keyed with the workspace API key, hex-encoded lowercase
+  retries: every minute, up to 5 times, on any non-2xx response
+  events: [batch completion, contact_finished]
+  detail: asyncapi/fullenrich-webhooks.yml
+  docs: https://docs.fullenrich.com/api/v2/general/webhooks
+  note: >-
+    HMAC-SHA1 is the weakest of the commonly used webhook signing algorithms, and
+    the signing secret is the same value as the API key — rotating one rotates the
+    other.
+
+data_retention:
+  enrichment_results: 3 months
+  detail: >-
+    For GDPR compliance, enrichment data is stored for 3 months. Fetching results
+    with an enrichment_id older than 3 months returns an error, and re-enriching
+    after that window launches a fresh (billable) enrichment.
+
+other_conventions:
+  - name: Credits are consumed only on found data
+    detail: >-
+      1 credit per verified work email, 3 per personal email, 10 per mobile phone,
+      1 per reverse lookup, 0.25 per standalone person/company profile. Failed
+      lookups, landlines and out-of-service numbers cost nothing.
+      See plans/fullenrich-plans-pricing.yml.
+  - name: Email deliverability status is first-class
+    detail: >-
+      Every returned email carries a status of DELIVERABLE (~2% bounce),
+      HIGH_PROBABILITY (~9% bounce), CATCH_ALL, INVALID or INVALID_DOMAIN.
+      most_probable_work_email excludes INVALID.
+  - name: Timestamps
+    detail: ISO 8601 date-time strings (employment/education start_at, end_at).
+  - name: Phone format
+    detail: E.164, with an ISO country code in `region`.

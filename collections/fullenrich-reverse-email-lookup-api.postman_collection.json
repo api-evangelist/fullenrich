@@ -1,0 +1,557 @@
+{
+  "item": [
+    {
+      "id": "ed0442a5-7db5-46d4-9cb8-2affc4a8d6dd",
+      "name": "Reverse Email Lookup",
+      "description": {
+        "content": "Resolve a person and company from an email address.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "d887f9f1-1a8e-4b34-a80c-835f3a7fa887",
+          "name": "Start a bulk reverse email lookup",
+          "request": {
+            "name": "Start a bulk reverse email lookup",
+            "description": {
+              "content": "Resolve a person and company from one or more email addresses. Returns an enrichment_id used to retrieve results.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contact",
+                "reverse",
+                "email",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"<string>\",\n  \"data\": [\n    {\n      \"email\": \"<email>\",\n      \"custom\": {\n        \"key_0\": \"<string>\"\n      }\n    },\n    {\n      \"email\": \"<email>\",\n      \"custom\": {\n        \"key_0\": \"<string>\",\n        \"key_1\": \"<string>\"\n      }\n    }\n  ],\n  \"webhook_url\": \"<uri>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "35fa8397-e109-42c3-97b3-1574cf1927d7",
+              "name": "Reverse lookup accepted.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contact",
+                    "reverse",
+                    "email",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"data\": [\n    {\n      \"email\": \"john.doe@acme.com\",\n      \"custom\": {\n        \"key_0\": \"<string>\",\n        \"key_1\": \"<string>\",\n        \"key_2\": \"<string>\",\n        \"key_3\": \"<string>\"\n      }\n    },\n    {\n      \"email\": \"john.doe@acme.com\",\n      \"custom\": {\n        \"key_0\": \"<string>\",\n        \"key_1\": \"<string>\",\n        \"key_2\": \"<string>\"\n      }\n    }\n  ],\n  \"webhook_url\": \"<uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"enrichment_id\": \"2db5ea61-1752-42cf-8ea1-ab1da060cd0a\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1411b838-74ca-40e0-92de-2ed5e0971e01",
+              "name": "Bad request or enrichment still in progress.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contact",
+                    "reverse",
+                    "email",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"data\": [\n    {\n      \"email\": \"john.doe@acme.com\",\n      \"custom\": {\n        \"key_0\": \"<string>\",\n        \"key_1\": \"<string>\",\n        \"key_2\": \"<string>\",\n        \"key_3\": \"<string>\"\n      }\n    },\n    {\n      \"email\": \"john.doe@acme.com\",\n      \"custom\": {\n        \"key_0\": \"<string>\",\n        \"key_1\": \"<string>\",\n        \"key_2\": \"<string>\"\n      }\n    }\n  ],\n  \"webhook_url\": \"<uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"error.unauthorized\",\n  \"message\": \"Invalid API key\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "306ae777-c11d-4020-bc51-275eca0e98a4",
+              "name": "Authorization failed (missing header or invalid API key).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contact",
+                    "reverse",
+                    "email",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"data\": [\n    {\n      \"email\": \"john.doe@acme.com\",\n      \"custom\": {\n        \"key_0\": \"<string>\",\n        \"key_1\": \"<string>\",\n        \"key_2\": \"<string>\",\n        \"key_3\": \"<string>\"\n      }\n    },\n    {\n      \"email\": \"john.doe@acme.com\",\n      \"custom\": {\n        \"key_0\": \"<string>\",\n        \"key_1\": \"<string>\",\n        \"key_2\": \"<string>\"\n      }\n    }\n  ],\n  \"webhook_url\": \"<uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"error.unauthorized\",\n  \"message\": \"Invalid API key\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f7658806-5645-43ca-911e-3c79d2d70ca5",
+              "name": "Rate limit exceeded.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contact",
+                    "reverse",
+                    "email",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"data\": [\n    {\n      \"email\": \"john.doe@acme.com\",\n      \"custom\": {\n        \"key_0\": \"<string>\",\n        \"key_1\": \"<string>\",\n        \"key_2\": \"<string>\",\n        \"key_3\": \"<string>\"\n      }\n    },\n    {\n      \"email\": \"john.doe@acme.com\",\n      \"custom\": {\n        \"key_0\": \"<string>\",\n        \"key_1\": \"<string>\",\n        \"key_2\": \"<string>\"\n      }\n    }\n  ],\n  \"webhook_url\": \"<uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"error.unauthorized\",\n  \"message\": \"Invalid API key\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "84d26e3e-5f7c-4cbb-9339-5e5da9a7bdd0",
+          "name": "Get reverse email lookup results",
+          "request": {
+            "name": "Get reverse email lookup results",
+            "description": {
+              "content": "Retrieve the result of a reverse email lookup by its enrichment_id.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "contact",
+                "reverse",
+                "email",
+                "bulk"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "enrichment_id",
+                  "value": "<uuid>",
+                  "description": "(Required) The enrichment_id returned when the reverse lookup was started."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "8a1bc16e-8c7e-4c06-8cd4-4c607028a3cd",
+              "name": "Reverse lookup results.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contact",
+                    "reverse",
+                    "email",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "enrichment_id",
+                      "value": "<uuid>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"4a3e39e7-a9d5-fab4-8a2d-569a0f41f597\",\n  \"name\": \"string\",\n  \"status\": \"FINISHED\",\n  \"cost\": {\n    \"credits\": 7172\n  },\n  \"data\": [\n    {\n      \"input\": {\n        \"first_name\": \"string\",\n        \"last_name\": \"string\",\n        \"full_name\": \"string\",\n        \"company_domain\": \"string\",\n        \"company_name\": \"string\",\n        \"professional_network_url\": \"string\"\n      },\n      \"custom\": {\n        \"key_0\": \"string\"\n      },\n      \"contact_info\": {\n        \"most_probable_work_email\": {\n          \"email\": \"lo0i@zIBjVTRQROiQU.gh\",\n          \"status\": \"INVALID\"\n        },\n        \"most_probable_personal_email\": {\n          \"email\": \"3-K7YkEY5TcnEIw@ClOoMosszTqrtTmGorAYhRqtTEGOPrsd.lr\",\n          \"status\": \"HIGH_PROBABILITY\"\n        },\n        \"most_probable_phone\": {\n          \"number\": \"+14155552671\",\n          \"region\": \"US\"\n        },\n        \"work_emails\": [\n          {\n            \"email\": \"2KGJz3jm9lCV@AMkwNtghX.fg\",\n            \"status\": \"INVALID_DOMAIN\"\n          },\n          {\n            \"email\": \"SeaoQBi98@uAmjuXUUYss.ua\",\n            \"status\": \"CATCH_ALL\"\n          }\n        ],\n        \"personal_emails\": [\n          {\n            \"email\": \"HVgzowaBbted@klbqFDRJuJSHjSafdXNLuuAGyUQR.lo\",\n            \"status\": \"INVALID\"\n          },\n          {\n            \"email\": \"NELA9n@lmzlvRgKhCncBMoPN.ys\",\n            \"status\": \"HIGH_PROBABILITY\"\n          }\n        ],\n        \"phones\": [\n          {\n            \"number\": \"+14155552671\",\n            \"region\": \"US\"\n          },\n          {\n            \"number\": \"+14155552671\",\n            \"region\": \"US\"\n          }\n        ]\n      },\n      \"profile\": {\n        \"id\": \"1849f0c5-08ec-7199-07de-3e72d7477a74\",\n        \"full_name\": \"string\",\n        \"first_name\": \"string\",\n        \"last_name\": \"string\",\n        \"location\": {\n          \"country\": \"string\",\n          \"country_code\": \"string\",\n          \"city\": \"string\",\n          \"region\": \"string\"\n        },\n        \"social_profiles\": {\n          \"professional_network\": {\n            \"id\": 4404,\n            \"url\": \"string\",\n            \"handle\": \"string\",\n            \"connection_count\": 2378\n          }\n        },\n        \"skills\": [\n          \"string\",\n          \"string\"\n        ],\n        \"employment\": {\n          \"current\": {\n            \"title\": \"string\",\n            \"is_current\": true,\n            \"start_at\": \"1991-04-23T17:09:39.518Z\",\n            \"end_at\": \"2009-07-09T02:29:16.966Z\",\n            \"company\": {\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"domain\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"all\": [\n            {\n              \"title\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"is_current\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"start_at\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"end_at\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"company\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            {\n              \"title\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"is_current\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"start_at\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"end_at\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"company\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          ]\n        }\n      }\n    },\n    {\n      \"input\": {\n        \"first_name\": \"string\",\n        \"last_name\": \"string\",\n        \"full_name\": \"string\",\n        \"company_domain\": \"string\",\n        \"company_name\": \"string\",\n        \"professional_network_url\": \"string\"\n      },\n      \"custom\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\"\n      },\n      \"contact_info\": {\n        \"most_probable_work_email\": {\n          \"email\": \"j9iMXLI@kmpnSBt.untk\",\n          \"status\": \"INVALID\"\n        },\n        \"most_probable_personal_email\": {\n          \"email\": \"xRFAup1KkRBq@NVCMNOHDTlAoJfDpq.omyx\",\n          \"status\": \"INVALID\"\n        },\n        \"most_probable_phone\": {\n          \"number\": \"+14155552671\",\n          \"region\": \"US\"\n        },\n        \"work_emails\": [\n          {\n            \"email\": \"gZYlxc-bLIK@ItcvvnCXijTunSqtVeSFyrM.ig\",\n            \"status\": \"HIGH_PROBABILITY\"\n          },\n          {\n            \"email\": \"8Mb@wMbWKoDJHGxyzHgZLxt.rtc\",\n            \"status\": \"HIGH_PROBABILITY\"\n          }\n        ],\n        \"personal_emails\": [\n          {\n            \"email\": \"LkQt7V@NhnUxCLkyoezTzalmwWbIoLghUKBjTNvX.xt\",\n            \"status\": \"CATCH_ALL\"\n          },\n          {\n            \"email\": \"CPpFdcOa@xjRXrIePjDAzHGUr.dbwl\",\n            \"status\": \"DELIVERABLE\"\n          }\n        ],\n        \"phones\": [\n          {\n            \"number\": \"+14155552671\",\n            \"region\": \"US\"\n          },\n          {\n            \"number\": \"+14155552671\",\n            \"region\": \"US\"\n          }\n        ]\n      },\n      \"profile\": {\n        \"id\": \"b71983d3-ec4c-ad56-2761-105f921417a3\",\n        \"full_name\": \"string\",\n        \"first_name\": \"string\",\n        \"last_name\": \"string\",\n        \"location\": {\n          \"country\": \"string\",\n          \"country_code\": \"string\",\n          \"city\": \"string\",\n          \"region\": \"string\"\n        },\n        \"social_profiles\": {\n          \"professional_network\": {\n            \"id\": 4974,\n            \"url\": \"string\",\n            \"handle\": \"string\",\n            \"connection_count\": 8726\n          }\n        },\n        \"skills\": [\n          \"string\",\n          \"string\"\n        ],\n        \"employment\": {\n          \"current\": {\n            \"title\": \"string\",\n            \"is_current\": true,\n            \"start_at\": \"1984-07-17T01:43:03.632Z\",\n            \"end_at\": \"1984-02-29T10:57:48.258Z\",\n            \"company\": {\n              \"name\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"domain\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          },\n          \"all\": [\n            {\n              \"title\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"is_current\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"start_at\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"end_at\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"company\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            },\n            {\n              \"title\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"is_current\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"start_at\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"end_at\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              },\n              \"company\": {\n                \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n              }\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8ecaa524-cc8a-480f-819e-4cdb86d1eecc",
+              "name": "Authorization failed (missing header or invalid API key).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contact",
+                    "reverse",
+                    "email",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "enrichment_id",
+                      "value": "<uuid>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"error.unauthorized\",\n  \"message\": \"Invalid API key\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "71227fd2-2fd8-4732-8c0f-8a268f2ae860",
+              "name": "Enrichment id not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contact",
+                    "reverse",
+                    "email",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "enrichment_id",
+                      "value": "<uuid>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"error.unauthorized\",\n  \"message\": \"Invalid API key\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5a1c807c-c880-4719-9edd-38e67679cf41",
+              "name": "Rate limit exceeded.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "contact",
+                    "reverse",
+                    "email",
+                    "bulk"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "enrichment_id",
+                      "value": "<uuid>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": \"error.unauthorized\",\n  \"message\": \"Invalid API key\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://app.fullenrich.com/api/v2",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "995abe05-e23a-4a28-a3e5-66de25c97401",
+    "name": "FullEnrich Account Reverse Email Lookup API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "FullEnrich finds verified B2B business emails and mobile phone numbers by running a waterfall across 15+ data vendors. Submit contacts by first name, last name and company (domain or company name) — optionally with a LinkedIn URL — for bulk enrichment, then retrieve results by polling or via webhook. Credits are only consumed when data is found.\n\nContact Support:\n Name: FullEnrich Support",
+      "type": "text/plain"
+    }
+  }
+}

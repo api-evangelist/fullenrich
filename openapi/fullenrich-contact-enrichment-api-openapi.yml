@@ -1,294 +1,535 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
-  title: FullEnrich Account Contact Enrichment API
-  description: FullEnrich finds verified B2B business emails and mobile phone numbers by running a waterfall across 15+ data vendors. Submit contacts by first name, last name and company (domain or company name) — optionally with a LinkedIn URL — for bulk enrichment, then retrieve results by polling or via webhook. Credits are only consumed when data is found.
-  termsOfService: https://fullenrich.com/terms
+  title: FullEnrich Contact Enrichment API
+  description: Submit contacts for asynchronous waterfall enrichment across 25+ data sources and retrieve
+    results. FullEnrich API enables you to enrich B2B contacts with emails and phone numbers using data
+    from 20+ providers.  We are GDPR and CCPA compliant.
+  version: 2.0.0
   contact:
     name: FullEnrich Support
     url: https://docs.fullenrich.com
-  version: '2.0'
+  termsOfService: https://fullenrich.com/tos
 servers:
 - url: https://app.fullenrich.com/api/v2
-  description: FullEnrich production API
 security:
-- bearerAuth: []
+- BearerAuth: []
 tags:
 - name: Contact Enrichment
-  description: Submit contacts for waterfall enrichment and retrieve results.
+  description: Submit contacts for asynchronous waterfall enrichment across 25+ data sources and retrieve
+    results.
 paths:
   /contact/enrich/bulk:
     post:
-      operationId: startBulkEnrichment
-      tags:
-      - Contact Enrichment
-      summary: Start a bulk contact enrichment
-      description: Submit up to 100 contacts for waterfall enrichment. Each contact needs first_name and last_name plus either domain or company_name, or a linkedin_url. Returns an enrichment_id used to retrieve results.
+      summary: Enrich Contacts In Bulk
+      description: ''
+      operationId: postContactBulkEnrich
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BulkEnrichmentRequest'
+              $ref: '#/components/schemas/RequestPostContactBulkEnrich'
+            example:
+              name: Sales Operations in London
+              webhook_url: https://example.com/webhook
+              webhook_events:
+                contact_finished: https://example.com/webhook/contact
+              data:
+              - first_name: John
+                last_name: Snow
+                domain: example.com
+                company_name: Example Inc
+                linkedin_url: https://www.linkedin.com/in/demoge/
+                enrich_fields:
+                - contact.work_emails
+                - contact.personal_emails
+                - contact.phones
+                custom:
+                  user_id: '12584'
       responses:
         '200':
-          description: Enrichment job accepted.
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EnrichmentAccepted'
+                $ref: '#/components/schemas/ResponsePostContactBulkEnrich'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                EnrichmentNameNotSet:
+                  value:
+                    code: error.enrichment.name.empty
+                    message: Enrichment name not set
+                WebhookURLInvalid:
+                  value:
+                    code: error.enrichment.webhook_url
+                    message: Webhook URL must be start with http or https
+                ProviderNotSet:
+                  value:
+                    code: error.enrichment.provider.empty
+                    message: Providers not set
+                DataNotSet:
+                  value:
+                    code: error.enrichment.data.empty
+                    message: Data is empty
+                FirstNameNotSet:
+                  value:
+                    code: error.enrichment.first_name.empty
+                    message: First name cannot be empty
+                LastNameNotSet:
+                  value:
+                    code: error.enrichment.last_name.empty
+                    message: Last name cannot be empty
+                DomainNotSet:
+                  value:
+                    code: error.enrichment.domain.empty
+                    message: Domain cannot be empty
+                EnrichFieldsNotSet:
+                  value:
+                    code: error.enrichment.enrich_fields.empty
+                    message: enrichFields cannot be empty
+                EnrichFieldValue:
+                  value:
+                    code: error.enrichment.enrich_field.value
+                    message: enrichField 'xxxx' not valid must be contact.work_emails or contact.phones
+                      or contact.personal_emails
+                CustomKeyExceeded:
+                  value:
+                    code: error.enrichment.custom.key.exceeded
+                    message: 'Custom field contains too many keys (max: 10 keys)'
+                CustomKeyValueExceeded:
+                  value:
+                    code: error.enrichment.custom.value.exceeded
+                    message: 'Custom field value max len exceeded (max: 100 character)'
         '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                AuthorizationHeaderNotSet:
+                  value:
+                    code: error.authorization.not_set
+                    message: Authorization headers not set
+                AuthorizationHeaderNotAnBearer:
+                  value:
+                    code: error.authorization.not_bearer
+                    message: Authorization headers do not have prefix 'bearer'
+                UnknownApiKey:
+                  value:
+                    code: error.api.key
+                    message: Unknown api key
         '429':
-          $ref: '#/components/responses/RateLimited'
-    get:
-      operationId: getBulkEnrichmentByQuery
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                RateLimitExceeded:
+                  value:
+                    code: error.rate.limit
+                    message: Too many requests. Try again in 1m
+      security:
+      - BearerAuth: []
       tags:
       - Contact Enrichment
-      summary: Get bulk enrichment results by enrichment id
-      description: Retrieve the results of a bulk enrichment. The enrichment_id may be supplied as a path segment (/contact/enrich/bulk/{enrichment_id}) or as a query parameter, depending on client convention.
-      parameters:
-      - name: enrichment_id
-        in: query
-        required: true
-        description: The enrichment_id returned when the enrichment was started.
-        schema:
-          type: string
-          format: uuid
-      - name: forceResults
-        in: query
-        required: false
-        description: Return partial results even if the enrichment is not finished.
-        schema:
-          type: boolean
-          default: false
-      responses:
-        '200':
-          description: Enrichment results.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EnrichmentResult'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '429':
-          $ref: '#/components/responses/RateLimited'
   /contact/enrich/bulk/{enrichment_id}:
     get:
-      operationId: getBulkEnrichment
-      tags:
-      - Contact Enrichment
-      summary: Get bulk enrichment results
-      description: Retrieve the results of a bulk enrichment by its enrichment_id. The response includes the run status, credits consumed, and per-contact enriched contact info and profile data.
+      summary: Get Bulk Enrich Results
+      description: Use this endpoint to retrieve the result from an enrich.
+      operationId: GetContactBulkEnrichByID
       parameters:
       - name: enrichment_id
         in: path
         required: true
-        description: The unique identifier returned when the enrichment was started.
+        description: The unique identifier returned when the enrichment was started
         schema:
           type: string
-          format: uuid
+        example: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
       - name: forceResults
         in: query
-        required: false
-        description: Return partial results even if the enrichment is not finished.
         schema:
           type: boolean
-          default: false
+        description: Default = False. This parameter forces the API to return what has been found so far,
+          even if the enrichment is not finished. This may result in missing information and is not recommended
+          for regular use.
       responses:
         '200':
-          description: Enrichment results.
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EnrichmentResult'
+                $ref: '#/components/schemas/ResponseGetContactBulkEnrich'
+              example:
+                id: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+                name: Sales Operations in London
+                status: FINISHED
+                cost:
+                  credits: 14
+                data:
+                - input:
+                    first_name: John
+                    last_name: Snow
+                    company_domain: example.com
+                    company_name: Example Inc
+                    professional_network_url: https://www.linkedin.com/in/demoge/
+                  custom:
+                    user_id: '12584'
+                  contact_info:
+                    most_probable_work_email:
+                      email: john.snow@example.com
+                      status: DELIVERABLE
+                    most_probable_personal_email:
+                      email: johnsnow@gmail.com
+                      status: DELIVERABLE
+                    most_probable_phone:
+                      number: +1 555-123-4567
+                      region: US
+                    work_emails:
+                    - email: john.snow@example.com
+                      status: DELIVERABLE
+                    personal_emails:
+                    - email: johnsnow@gmail.com
+                      status: DELIVERABLE
+                    phones:
+                    - number: +1 555-123-4567
+                      region: US
+                    - number: +33 6 12 34 56 78
+                      region: FR
+                  profile:
+                    id: 746e4816-19c8-54d8-b558-65a5a52cc85c
+                    full_name: John Snow
+                    first_name: John
+                    last_name: Snow
+                    headline: Head of Sales Operations at Example Inc | Revenue Operations, CRM & Sales
+                      Enablement
+                    description: Sales operations leader focused on revenue processes, CRM architecture
+                      and sales enablement. I help go-to-market teams scale pipeline with clean data and
+                      reliable reporting.
+                    location:
+                      country: United States
+                      country_code: US
+                      city: San Francisco
+                      region: California
+                    social_profiles:
+                      professional_network:
+                        id: 1234
+                        url: https://www.linkedin.com/in/john-doe
+                        handle: john-doe
+                        connection_count: 500
+                    educations:
+                    - school_name: Stanford University
+                      degree: Bachelor of Science in Computer Science
+                      start_at: '2015-09-01T00:00:00Z'
+                      end_at: '2019-06-01T00:00:00Z'
+                    languages:
+                    - language: English
+                      proficiency: PROFESSIONAL_WORKING
+                    - language: French
+                      proficiency: NATIVE_OR_BILINGUAL
+                    skills:
+                    - Sales Operations
+                    - Business Development
+                    - CRM Management
+                    employment:
+                      current:
+                        title: Head of Sales Operations
+                        is_current: true
+                        start_at: '2022-03-15T00:00:00Z'
+                        company:
+                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                          name: Example Inc
+                          domain: example.com
+                          website: https://www.example.com
+                          description: Leading example company
+                          year_founded: 2010
+                          headcount: 250
+                          company_type: Privately Held
+                          locations:
+                            headquarters:
+                              line1: 123 Market St
+                              line2: San Francisco, CA 94105, US
+                              city: San Francisco
+                              region: California
+                              country: United States
+                              country_code: US
+                            offices:
+                            - line1: 456 Broadway
+                              line2: New York, NY 10013, US
+                          industry:
+                            main_industry: Software Development
+                          social_profiles:
+                            professional_network:
+                              url: https://www.linkedin.com/company/example-inc
+                              handle: example-inc
+                              connection_count: 12000
+                          logo_url: https://app.fullenrich.com/logo/company/handle/example-inc
+                      all:
+                      - title: Head of Sales Operations
+                        is_current: true
+                        start_at: '2022-03-15T00:00:00Z'
+                        company:
+                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                          name: Example Inc
+                          domain: example.com
+                          website: https://www.example.com
+                          description: Leading example company
+                          year_founded: 2010
+                          headcount: 250
+                          company_type: Privately Held
+                          locations:
+                            headquarters:
+                              line1: 123 Market St
+                              line2: San Francisco, CA 94105, US
+                              city: San Francisco
+                              region: California
+                              country: United States
+                              country_code: US
+                            offices:
+                            - line1: 456 Broadway
+                              line2: New York, NY 10013, US
+                          industry:
+                            main_industry: Software Development
+                          social_profiles:
+                            professional_network:
+                              url: https://www.linkedin.com/company/example-inc
+                              handle: example-inc
+                              connection_count: 12000
+                          logo_url: https://app.fullenrich.com/logo/company/handle/example-inc
+                      - title: Sales Manager
+                        is_current: false
+                        start_at: '2019-07-01T00:00:00Z'
+                        end_at: '2022-03-01T00:00:00Z'
+                        company:
+                          id: b2c3d4e5-f6a7-8901-bcde-f12345678901
+                          name: Previous Corp
+                          domain: previouscorp.com
+                          website: https://www.previouscorp.com
+                          description: Enterprise software solutions
+                          year_founded: 2005
+                          headcount: 500
+                          company_type: Privately Held
+                          locations:
+                            headquarters:
+                              line1: 789 5th Ave
+                              line2: New York, NY 10022, US
+                              city: New York
+                              region: New York
+                              country: United States
+                              country_code: US
+                            offices: []
+                          industry:
+                            main_industry: Software Development
+                          social_profiles:
+                            professional_network:
+                              url: https://www.linkedin.com/company/example-inc
+                              handle: example-inc
+                              connection_count: 12000
+                          logo_url: https://app.fullenrich.com/logo/company/handle/example-inc
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                InProgress:
+                  value:
+                    code: error.enrichment.in_progress
+                    message: Enrichment not ready, try again in 30 seconds
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                AuthorizationHeaderNotSet:
+                  value:
+                    code: error.authorization.not_set
+                    message: Authorization headers not set
+                AuthorizationHeaderNotAnBearer:
+                  value:
+                    code: error.authorization.not_bearer
+                    message: Authorization headers do not have prefix 'bearer'
+                UnknownApiKey:
+                  value:
+                    code: error.api.key
+                    message: Unknown api key
         '402':
-          $ref: '#/components/responses/PaymentRequired'
+          description: Payment Required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseGetContactBulkEnrich'
         '404':
-          $ref: '#/components/responses/NotFound'
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                EnrichmentNotFound:
+                  value:
+                    code: error.enrichment.not_found
+                    message: Enrichment ID not found
         '429':
-          $ref: '#/components/responses/RateLimited'
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                RateLimitExceeded:
+                  value:
+                    code: error.rate.limit
+                    message: Too many requests. Try again in 1m
+      security:
+      - BearerAuth: []
+      tags:
+      - Contact Enrichment
 components:
   schemas:
-    EnrichmentResult:
+    CompanyAddress:
+      type: object
+      description: Structured headquarters address with parsed location fields
+      properties:
+        line1:
+          type: string
+          description: Address line 1 (street address)
+          example: 548 Market St
+        line2:
+          type: string
+          description: Address line 2 (full location string including city, region, postal code, and country
+            code)
+          example: San Francisco, CA 94105, US
+        city:
+          type: string
+          description: City name
+          example: San Francisco
+        region:
+          type: string
+          description: State or region
+          example: California
+        country:
+          type: string
+          description: Country name
+          example: United States
+        country_code:
+          type: string
+          description: ISO country code
+          example: US
+    CompanySocialProfile:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        status:
-          type: string
-          enum:
-          - CREATED
-          - IN_PROGRESS
-          - CANCELED
-          - CREDITS_INSUFFICIENT
-          - FINISHED
-          - RATE_LIMIT
-          - UNKNOWN
-        cost:
+        professional_network:
           type: object
+          description: Professional network profile information
           properties:
-            credits:
+            id:
               type: integer
-              description: Total credits consumed by this enrichment.
-        data:
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/company/anthropic
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: anthropic
+            connection_count:
+              type: integer
+              description: Number of professional network followers
+              example: 125000
+    ContactEnrichedInformation:
+      type: object
+      description: Contact information found during enrichment
+      properties:
+        most_probable_work_email:
+          description: The most reliable work email found
+          $ref: '#/components/schemas/Email'
+        most_probable_personal_email:
+          description: The most reliable personal email found
+          $ref: '#/components/schemas/Email'
+        most_probable_phone:
+          description: The most reliable mobile phone number found
+          $ref: '#/components/schemas/Phone'
+        work_emails:
           type: array
+          description: All work emails found
           items:
-            $ref: '#/components/schemas/EnrichedContact'
-    EnrichmentAccepted:
+            $ref: '#/components/schemas/Email'
+        personal_emails:
+          type: array
+          description: All personal emails found
+          items:
+            $ref: '#/components/schemas/Email'
+        phones:
+          type: array
+          description: All mobile phone numbers found
+          items:
+            $ref: '#/components/schemas/Phone'
+    ContactEnrichmentInput:
       type: object
-      properties:
-        enrichment_id:
-          type: string
-          format: uuid
-          example: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-          example: error.unauthorized
-        message:
-          type: string
-          example: Invalid API key
-    ContactInput:
-      type: object
-      description: A contact to enrich. Provide first_name and last_name plus either domain or company_name, or provide a linkedin_url.
+      description: The input data originally provided for this contact enrichment
       properties:
         first_name:
           type: string
-          example: John
+          description: First name of the contact
+          examples:
+          - John
         last_name:
           type: string
-          example: Doe
-        domain:
-          type: string
-          description: Company website domain.
-          example: acme.com
-        company_name:
-          type: string
-          example: Acme Inc
-        linkedin_url:
-          type: string
-          format: uri
-          description: LinkedIn profile URL to improve email and phone match rates.
-          example: https://www.linkedin.com/in/johndoe
-        enrich_fields:
-          type: array
-          description: Which data types to retrieve.
-          items:
-            type: string
-            enum:
-            - contact.work_emails
-            - contact.personal_emails
-            - contact.phones
-          example:
-          - contact.work_emails
-          - contact.phones
-        custom:
-          type: object
-          description: Reference data (e.g. CRM IDs) echoed back in the result. String values only; max 10 keys, up to 100 chars per value.
-          additionalProperties:
-            type: string
-    EnrichedContact:
-      type: object
-      properties:
-        input:
-          type: object
-          properties:
-            first_name:
-              type: string
-            last_name:
-              type: string
-            full_name:
-              type: string
-            company_domain:
-              type: string
-            company_name:
-              type: string
-            professional_network_url:
-              type: string
-        custom:
-          type: object
-          description: The custom object supplied in the request, echoed back unchanged.
-          additionalProperties:
-            type: string
-        contact_info:
-          $ref: '#/components/schemas/ContactInfo'
-        profile:
-          $ref: '#/components/schemas/Profile'
-    Profile:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
+          description: Last name of the contact
+          examples:
+          - Snow
         full_name:
           type: string
-        first_name:
+          description: Full name of the contact
+          examples:
+          - John Snow
+        company_domain:
           type: string
-        last_name:
+          description: Domain of the contact's company
+          examples:
+          - example.com
+        company_name:
           type: string
-        location:
-          type: object
-          properties:
-            country:
-              type: string
-            country_code:
-              type: string
-            city:
-              type: string
-            region:
-              type: string
-        social_profiles:
-          type: object
-          properties:
-            professional_network:
-              type: object
-              properties:
-                id:
-                  type: integer
-                url:
-                  type: string
-                handle:
-                  type: string
-                connection_count:
-                  type: integer
-        skills:
-          type: array
-          items:
-            type: string
-        employment:
-          type: object
-          properties:
-            current:
-              $ref: '#/components/schemas/Employment'
-            all:
-              type: array
-              items:
-                $ref: '#/components/schemas/Employment'
-    EmailResult:
+          description: Name of the contact's company
+          examples:
+          - Example Inc
+        professional_network_url:
+          type: string
+          description: Professional network profile URL of the contact
+          examples:
+          - https://www.linkedin.com/in/demoge
+    Cost:
+      type: object
+      properties:
+        credits:
+          type: integer
+          format: int64
+          description: Number of credits consumed for this enrichment
+          examples:
+          - 1
+          - 0
+    Email:
       type: object
       properties:
         email:
           type: string
-          format: email
+          examples:
+          - john.snow@example.com
         status:
           type: string
+          examples:
+          - DELIVERABLE
           enum:
           - DELIVERABLE
           - HIGH_PROBABILITY
@@ -300,115 +541,446 @@ components:
       properties:
         title:
           type: string
+          description: Job title or position
+          example: Senior Software Engineer
+        seniority:
+          type: string
+          description: Seniority level of the person in the company
+          example: Senior
+        job_functions:
+          type: array
+          description: Job functions of the person in the company
+          items:
+            type: object
+            properties:
+              function:
+                type: string
+                description: Job function
+                example: Not Employed
+              sub_function:
+                type: string
+                description: Sub function of the job function
+                example: Freelancer
+        description:
+          type: string
+          description: Description of the role and responsibilities. Not always present.
+          example: Leading the backend team and designing microservices architecture.
+        company:
+          type: object
+          description: Company information
+          allOf:
+          - $ref: '#/components/schemas/EmploymentCompany'
         is_current:
           type: boolean
+          description: Whether this is the current employment
+          example: true
         start_at:
           type: string
           format: date-time
+          description: Employment start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2022-03-15T00:00:00Z'
         end_at:
           type: string
           format: date-time
-        company:
-          type: object
-          properties:
-            name:
-              type: string
-            domain:
-              type: string
-    ContactInfo:
+          description: Employment end date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ).
+            This field is not returned for current employment (when is_current is true).
+          example: '2024-06-30T00:00:00Z'
+    EmploymentCompany:
       type: object
       properties:
-        most_probable_work_email:
-          $ref: '#/components/schemas/EmailResult'
-        most_probable_personal_email:
-          $ref: '#/components/schemas/EmailResult'
-        most_probable_phone:
-          $ref: '#/components/schemas/PhoneResult'
-        work_emails:
+        id:
+          type: string
+          description: Unique company identifier
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        name:
+          type: string
+          description: Company name
+          example: Anthropic
+        domain:
+          type: string
+          description: Company domain
+          example: anthropic.com
+        website:
+          type: string
+          description: Company website URL as declared by the company. May differ from `domain` (can include
+            a subdomain, a path or tracking parameters). Omitted when not available.
+          example: https://www.anthropic.com
+        description:
+          type: string
+          description: Company description
+          example: AI safety and research company
+        year_founded:
+          type: integer
+          description: Year the company was founded. Returns 0 when unknown.
+          example: 2021
+        headcount:
+          type: integer
+          description: Exact number of employees. May return 0 even when headcount_range is available.
+          example: 2610
+        headcount_range:
+          type: string
+          description: Employee count range (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000',
+            '5001-10000', '10001+')
+          example: 1001-5000
+        company_type:
+          type: string
+          description: Type of company (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed',
+            'Partnership', 'Educational', 'Government Agency')
+          example: Privately Held
+        specialties:
           type: array
+          description: Specialties associated with the company
           items:
-            $ref: '#/components/schemas/EmailResult'
-        personal_emails:
+            type: string
+          example:
+          - Data Enrichment
+          - B2B Data
+        locations:
+          type: object
+          description: Company location information
+          properties:
+            headquarters:
+              type: object
+              description: Main headquarters address with structured location fields. Can be an empty
+                object when no headquarters data is available.
+              allOf:
+              - $ref: '#/components/schemas/CompanyAddress'
+            offices:
+              type: array
+              description: Additional office locations. Only contains raw address lines (line1, line2)
+                without structured city/region/country fields. Can be null or an empty array.
+              nullable: true
+              items:
+                $ref: '#/components/schemas/OfficeAddress'
+        industry:
+          type: object
+          description: Company industry information
+          properties:
+            main_industry:
+              type: string
+              description: Primary industry category (e.g., 'Software Development', 'Computer Hardware
+                Manufacturing', 'Financial Services', 'Healthcare')
+              example: Software Development
+        social_profiles:
+          type: object
+          description: Company's social media profiles
+          allOf:
+          - $ref: '#/components/schemas/CompanySocialProfile'
+        logo_url:
+          type: string
+          description: URL of the company logo hosted by FullEnrich, built from the company's professional
+            network handle. Empty when the handle is unknown.
+          example: https://app.fullenrich.com/logo/company/handle/anthropic
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - code
+      - message
+    OfficeAddress:
+      type: object
+      description: Office address. Unlike headquarters, office addresses only contain raw address lines
+        without parsed location fields.
+      properties:
+        line1:
+          type: string
+          description: Street address
+          example: 111 8th Ave
+        line2:
+          type: string
+          description: Full location string (city, region, postal code, country code)
+          example: New York, NY 10011, US
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique person identifier
+          example: 746e4816-19c8-54d8-b558-65a5a52cc85c
+        full_name:
+          type: string
+          description: Person's full name
+          example: Enzo Romera
+        first_name:
+          type: string
+          description: Person's first name
+          example: Enzo
+        last_name:
+          type: string
+          description: Person's last name
+          example: Romera
+        headline:
+          type: string
+          description: Short professional tagline written by the person on their professional network
+            profile
+          example: Marketing Strategist | 10+ Years in Strategy, Account Management & Activation | Consulting
+            Expert
+        description:
+          type: string
+          description: Free-text summary written by the person in the about section of their professional
+            network profile. Omitted when not available.
+          example: Marketing strategist with 10+ years helping B2B companies build demand generation engines.
+            I work with go-to-market teams on positioning, account-based campaigns and channel activation.
+        location:
+          type: object
+          description: Person's location information
+          properties:
+            country:
+              type: string
+              description: Country name
+              example: United States
+            country_code:
+              type: string
+              description: ISO country code
+              example: US
+            city:
+              type: string
+              description: City name
+              example: San Francisco
+            region:
+              type: string
+              description: Region or state
+              example: California
+        social_profiles:
+          type: object
+          description: Person's social media profiles
+          allOf:
+          - $ref: '#/components/schemas/PersonSocialProfile'
+        educations:
           type: array
+          description: Person's education history
           items:
-            $ref: '#/components/schemas/EmailResult'
-        phones:
+            $ref: '#/components/schemas/PersonEducation'
+        languages:
           type: array
+          description: Languages spoken by the person
           items:
-            $ref: '#/components/schemas/PhoneResult'
-    PhoneResult:
+            $ref: '#/components/schemas/PersonLanguage'
+        skills:
+          type: array
+          description: Person's professional skills
+          items:
+            type: string
+          example:
+          - JavaScript
+          - Project Management
+          - Python
+        employment:
+          type: object
+          description: Person's employment history
+          properties:
+            current:
+              type: object
+              description: Current employment information. If the person is in their current position,
+                the end_at field will not be returned.
+              allOf:
+              - $ref: '#/components/schemas/Employment'
+            all:
+              type: array
+              description: All employment history (current and past)
+              items:
+                $ref: '#/components/schemas/Employment'
+    PersonEducation:
+      type: object
+      properties:
+        school_name:
+          type: string
+          description: Name of the educational institution
+          example: Stanford University
+        degree:
+          type: string
+          description: Degree or qualification obtained
+          example: Bachelor of Science in Computer Science
+        start_at:
+          type: string
+          format: date-time
+          description: Start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2015-09-01T00:00:00Z'
+        end_at:
+          type: string
+          format: date-time
+          description: End date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2019-06-01T00:00:00Z'
+    PersonLanguage:
+      type: object
+      properties:
+        language:
+          type: string
+          description: Language name
+          example: French
+        proficiency:
+          type: string
+          description: Proficiency level in the language (e.g., 'NATIVE_OR_BILINGUAL', 'FULL_PROFESSIONAL',
+            'PROFESSIONAL_WORKING', 'LIMITED_WORKING', 'ELEMENTARY')
+          example: NATIVE_OR_BILINGUAL
+    PersonSocialProfile:
+      type: object
+      properties:
+        professional_network:
+          type: object
+          description: Professional network profile information
+          properties:
+            id:
+              type: integer
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/in/john-doe
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: john-doe
+            connection_count:
+              type: integer
+              description: Number of professional network connections
+              example: 500
+    Phone:
       type: object
       properties:
         number:
           type: string
-          description: Phone number in E.164 format.
-          example: '+14155552671'
+          description: Phone number in international format (E.164)
+          examples:
+          - +33 6 76 78 90 65
         region:
           type: string
-          description: ISO country code for the number.
-          example: US
-    BulkEnrichmentRequest:
+          description: ISO 3166-1 alpha-2 country code where the phone number is registered (e.g., FR
+            for France, US for United States)
+          examples:
+          - FR
+    RecordEnrichment:
       type: object
-      required:
-      - name
-      - data
+      description: A single enriched contact record
+      properties:
+        input:
+          description: The original input data provided for this contact
+          $ref: '#/components/schemas/ContactEnrichmentInput'
+        custom:
+          type: object
+          description: Custom fields passed during enrichment request, returned unchanged
+          examples:
+          - user_id: '12584'
+        contact_info:
+          description: Contact information found during enrichment (emails and phone numbers)
+          $ref: '#/components/schemas/ContactEnrichedInformation'
+        profile:
+          description: Full professional profile of the person (returned when linkedin_url was provided)
+          $ref: '#/components/schemas/Person'
+    RequestPostContactBulkEnrich:
+      type: object
+      example:
+        name: Sales Operations in London
+        webhook_url: https://example.com/webhook
+        webhook_events:
+          contact_finished: https://example.com/webhook/contact
+        data:
+        - first_name: John
+          last_name: Snow
+          domain: example.com
+          company_name: Example Inc
+          professional_network_url: https://www.linkedin.com/in/demoge/
+          enrich_fields:
+          - contact.work_emails
+          - contact.personal_emails
+          - contact.phones
+          custom:
+            user_id: '12584'
       properties:
         name:
           type: string
-          description: A readable identifier for this enrichment, visible in your dashboard.
-          example: My enrichment batch
+          description: A readable name for this enrichment (visible in your dashboard)
         webhook_url:
           type: string
-          format: uri
-          description: URL that receives a POST when the enrichment finishes, lacks credits, or is canceled.
-          example: https://example.com/webhooks/fullenrich
+          description: URL that will receive a POST request when the entire enrichment is finished (all
+            contacts processed).
         webhook_events:
           type: object
-          description: Optional per-event webhook URLs.
+          description: Optional webhook URLs for specific events during enrichment
           properties:
             contact_finished:
               type: string
-              format: uri
-              description: URL called as each individual contact finishes.
+              description: URL that receives a POST request each time a single contact is enriched, without
+                waiting for the entire batch to complete. Useful for real-time updates.
         data:
           type: array
-          description: Up to 100 contacts to enrich.
-          maxItems: 100
           items:
-            $ref: '#/components/schemas/ContactInput'
-  responses:
-    NotFound:
-      description: Enrichment id not found.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    RateLimited:
-      description: Rate limit exceeded.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Authorization failed (missing header or invalid API key).
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadRequest:
-      description: Bad request or enrichment still in progress.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    PaymentRequired:
-      description: Payment required (insufficient credits).
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/RequestPostContactBulkEnrichContact'
+      required:
+      - name
+      - data
+    RequestPostContactBulkEnrichContact:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        domain:
+          type: string
+        company_name:
+          type: string
+        linkedin_url:
+          type: string
+          description: Supports standard LinkedIn profile URLs (e.g., https://www.linkedin.com/in/demoge)
+            as well as LinkedIn Sales Navigator URLs (e.g., https://www.linkedin.com/in/ACwAACLLwaIBKi655883b).
+        enrich_fields:
+          type: array
+          items:
+            type: string
+            enum:
+            - contact.work_emails
+            - contact.phones
+            - contact.personal_emails
+        custom:
+          type: object
+          description: Returned in the enrichment result. Use it to identify a user, a CRM contact, or
+            to pass any other information. All values must be strings. Limited to 20 entries.
+    ResponseGetContactBulkEnrich:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          examples:
+          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+        name:
+          type: string
+          examples:
+          - Sales Operations in London
+        status:
+          type: string
+          examples:
+          - FINISHED
+          enum:
+          - CREATED
+          - IN_PROGRESS
+          - CANCELED
+          - CREDITS_INSUFFICIENT
+          - FINISHED
+          - RATE_LIMIT
+          - UNKNOWN
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecordEnrichment'
+        cost:
+          $ref: '#/components/schemas/Cost'
+    ResponsePostContactBulkEnrich:
+      type: object
+      properties:
+        enrichment_id:
+          type: string
+          format: uuid
+          examples:
+          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
   securitySchemes:
-    bearerAuth:
+    BearerAuth:
       type: http
       scheme: bearer
-      description: 'Pass your API key from the FullEnrich dashboard as a Bearer token in the Authorization header: `Authorization: Bearer YOUR_API_KEY`.'
+      bearerFormat: string

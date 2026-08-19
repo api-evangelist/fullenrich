@@ -1,0 +1,142 @@
+generated: '2026-08-14'
+method: derived
+source: >-
+  openapi/_original/fullenrich-openapi.yml (every 4xx/5xx response across the 10
+  operations), enriched from https://docs.fullenrich.com/api/v2/general/credit and
+  /general/ratelimit and /general/webhooks.
+format: proprietary
+rfc9457: false
+envelope:
+  media_type: application/json
+  schema: '#/components/schemas/Error'
+  shape: '{ "code": "<string>", "message": "<string>" }'
+  note: >-
+    Not RFC 9457 problem+json — no type/title/status/detail/instance members and no
+    application/problem+json media type anywhere in the spec.
+
+catalog_gap: >-
+  FullEnrich publishes the error ENVELOPE but not the error CODES. The `code` field
+  is typed as a bare string with no enum in the spec, and there is no error-code
+  reference page in the documentation, help center or llms.txt index. An agent
+  therefore cannot branch on a stable machine-readable code; it can only branch on
+  the HTTP status. The problems below are the HTTP-status-level contract, which is
+  the complete set the provider actually publishes.
+
+problems:
+  - status: 400
+    title: Bad Request
+    meaning: >-
+      Malformed request body, missing required identifiers, or a non-string value in
+      the `custom` object. On the enrichment GET, also returned while the enrichment
+      is still in progress.
+    retryable: false
+    remediation: >-
+      Each contact needs first_name and last_name plus either domain or company_name,
+      or a linkedin_url. `custom` values must be strings.
+    source_operations:
+      - postContactBulkEnrich
+      - GetContactBulkEnrichByID
+      - postContactBulkReverseEmail
+      - postPeopleSearch
+      - postCompanySearch
+      - postPeopleLookup
+      - postCompanyLookup
+
+  - status: 401
+    title: Unauthorized
+    meaning: Missing Authorization header, or an invalid/revoked API key.
+    retryable: false
+    remediation: >-
+      Send `Authorization: Bearer <API_KEY>` with a key from
+      https://app.fullenrich.com/app/api. Regenerate the key if compromised.
+    source_operations:
+      - checkKey
+      - getAccountCredits
+      - postContactBulkEnrich
+      - GetContactBulkEnrichByID
+      - postContactBulkReverseEmail
+      - GetContactBulkReverseEmailByID
+      - postPeopleSearch
+      - postCompanySearch
+      - postPeopleLookup
+      - postCompanyLookup
+
+  - status: 402
+    title: Payment Required
+    meaning: >-
+      Insufficient credits for the requested enrichment. Distinctive: the 402 body
+      is NOT the Error envelope — it returns the full result object
+      (ResponseGetContactBulkEnrich / ResponseGetContactBulkReverseEmail), whose
+      `status` field carries CREDITS_INSUFFICIENT.
+    retryable: false
+    remediation: >-
+      Top up credits, renew early, or move to a higher-volume tier. Enable low-credit
+      alerts at https://app.fullenrich.com/app/settings/credits/alerts/.
+    envelope_exception: true
+    source_operations:
+      - GetContactBulkEnrichByID
+      - GetContactBulkReverseEmailByID
+
+  - status: 404
+    title: Not Found
+    meaning: >-
+      Unknown enrichment_id, or an enrichment older than the 3-month retention
+      window. On the account endpoints the spec describes this as
+      "Workspace ID not found".
+    retryable: false
+    remediation: >-
+      Enrichment results are retained for 3 months for GDPR compliance; after that
+      the id no longer resolves and a fresh (billable) enrichment is required.
+    source_operations:
+      - checkKey
+      - getAccountCredits
+      - GetContactBulkEnrichByID
+      - GetContactBulkReverseEmailByID
+    note: >-
+      On checkKey and getAccountCredits the 404 response declares no content schema
+      at all in the spec, so the body shape for that case is unspecified.
+
+  - status: 429
+    title: Too Many Requests
+    meaning: Rate limit exceeded — more than 60 API calls in one minute.
+    retryable: true
+    remediation: >-
+      Back off with exponential backoff and jitter. No Retry-After or RateLimit-*
+      header is returned, so the client must pace locally. Prefer webhooks over
+      polling so result collection does not consume request budget.
+    source_operations:
+      - postContactBulkEnrich
+      - GetContactBulkEnrichByID
+      - postPeopleSearch
+      - postCompanySearch
+      - postPeopleLookup
+      - postCompanyLookup
+    note: >-
+      The reverse-email operations do NOT declare a 429 in the spec even though the
+      documented 60/min limit applies to all endpoints — a spec/documentation
+      inconsistency, not a different limit.
+
+job_level_failures:
+  description: >-
+    Some failures are reported inside a 200 response as an enrichment `status`
+    rather than as an HTTP error. An agent must inspect the status field, not just
+    the status code.
+  statuses:
+    - value: CREDITS_INSUFFICIENT
+      meaning: The job stopped because the workspace ran out of credits.
+    - value: RATE_LIMIT
+      meaning: The job was throttled.
+    - value: CANCELED
+      meaning: The job was canceled.
+    - value: UNKNOWN
+      meaning: Unclassified failure state.
+
+webhook_delivery_failures:
+  detail: >-
+    A non-2xx from the caller's webhook endpoint triggers a retry every minute, up
+    to 5 attempts. After that the result must be collected with the GET endpoint
+    within the 3-month retention window.
+
+no_5xx_declared: >-
+  The published spec declares no 5xx responses on any operation. Clients should
+  still treat 5xx as retryable.

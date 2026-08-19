@@ -1,0 +1,106 @@
+generated: '2026-08-14'
+method: searched
+source: https://docs.fullenrich.com/api/v2/general/webhooks
+spec_type: WebhookCatalog
+asyncapi_published: false
+asyncapi_note: >-
+  FullEnrich publishes no AsyncAPI document. Probed the docs host, the llms.txt
+  index and the GitHub organization; no /asyncapi.yaml, event catalog or channel
+  spec exists. This file captures the webhook surface the provider does document,
+  rather than fabricating a spec on its behalf.
+description: >-
+  FullEnrich's enrichment and reverse-email-lookup APIs are asynchronous, and
+  webhooks are the provider's recommended collection mechanism — polling is
+  explicitly discouraged. Two outbound events are documented, both signed with
+  HMAC-SHA1 and retried on failure.
+
+transport: HTTPS POST callback to a caller-supplied URL
+subscription_model: per-request — the callback URL is a field on the job submission, not a registered endpoint
+registration_ui: none (no webhook management console documented)
+
+events:
+  - name: batch_finished
+    parameter: webhook_url
+    trigger: >-
+      Fires once when the entire batch finishes, runs out of credits, or is
+      canceled.
+    applies_to:
+      - postContactBulkEnrich
+      - postContactBulkReverseEmail
+    payload_schema: '#/components/schemas/ResponseGetContactBulkEnrich'
+    payload_note: >-
+      Identical to the body returned by the GET results endpoint — status, cost,
+      and the full data array.
+    status_values: [FINISHED, CREDITS_INSUFFICIENT, CANCELED]
+
+  - name: contact_finished
+    parameter: webhook_events.contact_finished
+    trigger: >-
+      Fires immediately as each individual contact completes, without waiting for
+      the batch. Designed for real-time integrations.
+    applies_to:
+      - postContactBulkEnrich
+    payload_schema: '#/components/schemas/ResponseGetContactBulkEnrich'
+    payload_note: >-
+      Same envelope, with a single contact in the `data` array. `status` is
+      IN_PROGRESS because the batch is not finished.
+    combinable: >-
+      Can be used together with webhook_url — the caller receives one event per
+      contact plus a final batch event.
+
+security:
+  signature_header: X-Signature-SHA1
+  algorithm: HMAC-SHA1
+  encoding: lowercase hex
+  signed_payload: the raw request body bytes (UTF-8), before any JSON parsing or re-serialization
+  secret: the workspace API key
+  verification_guidance: >-
+    Compute HMAC-SHA1 of the raw body keyed with the API key, hex-encode lowercase,
+    and compare in constant time. The docs publish verified examples in Node.js,
+    Python, PHP and Go.
+  observations:
+    - >-
+      HMAC-SHA1 is weaker than the HMAC-SHA256 that is now standard for webhook
+      signing across the industry.
+    - >-
+      The signing secret IS the API key rather than a dedicated signing secret, so
+      the credential that authenticates outbound calls also verifies inbound ones.
+      Rotating the API key silently breaks webhook verification until the receiver
+      is updated.
+    - >-
+      No timestamp is included in the signature, so the scheme does not defend
+      against replay on its own.
+
+delivery:
+  retries: 5
+  retry_interval: every 1 minute
+  retry_trigger: any non-2xx response from the receiver
+  guarantee: >-
+    Documented as effectively "guaranteed delivery"; the provider's team can check
+    delivery logs on request. There is no self-serve delivery-log UI documented.
+  fallback: >-
+    'GET /contact/enrich/bulk/{enrichment_id}' within the 3-month retention window.
+
+correlation:
+  mechanism: '`custom` object'
+  detail: >-
+    A caller-supplied string map (max 10 keys, 100 chars per value) is echoed back
+    unchanged in the webhook payload — the intended join key to a CRM record or
+    user id. Non-string values are rejected.
+
+testing:
+  recommended_tool: https://webhook.site
+  detail: >-
+    The docs recommend a webhook.site temporary URL to inspect the payload shape
+    while integrating. See sandbox/fullenrich-sandbox.yml.
+
+no_code_platforms:
+  detail: >-
+    Zapier, Make, Clay and n8n handle the webhook leg automatically; the docs tell
+    users of those platforms to skip webhook setup entirely.
+
+gaps:
+  - No AsyncAPI document, so the event surface is not machine-readable.
+  - No webhook management/registration endpoint or console — URLs are per-request only.
+  - No documented event id or delivery id, so receivers cannot deduplicate a retried delivery.
+  - No timestamp in the signature scheme.

@@ -1,0 +1,38 @@
+# FullEnrich API Documentation
+
+## Docs
+
+- [API Overview](https://docs.fullenrich.com/api/v2/general/introduction.md): 👋 Welcome to FullEnrich API Documentation
+- [Authentication](https://docs.fullenrich.com/api/v2/general/authentication.md)
+- [How Webhooks Work](https://docs.fullenrich.com/api/v2/general/webhooks.md): The recommended way to receive enrichment results
+- [Credits & Testing Tips](https://docs.fullenrich.com/api/v2/general/credit.md)
+- [Email Verification Status](https://docs.fullenrich.com/api/v2/general/email-status.md)
+- [Data Dictionary](https://docs.fullenrich.com/api/v2/general/data-dictionary.md): Every data point you get from FullEnrich — across Search, Enrichment, and Reverse Email.
+- [Rate Limit](https://docs.fullenrich.com/api/v2/general/ratelimit.md)
+- [Getting Started & Concepts](https://docs.fullenrich.com/api/v2/implement-in-product/getting-started.md)
+- [Rate Limits & Volume](https://docs.fullenrich.com/api/v2/implement-in-product/volume.md)
+- [Deploying in Production](https://docs.fullenrich.com/api/v2/implement-in-product/production.md)
+- [Quality Over Speed](https://docs.fullenrich.com/api/v2/implement-in-product/quality-over-speed.md)
+- [Start Bulk Enrichment](https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post.md)
+- [Get Enrichment Result](https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get.md): Use this endpoint to retrieve the result from an enrich. You don’t need to use this endpoint if you are using a webhook. Using a webhook is the method we recommend to get the result as soon as the enrichment is done.
+- [Reverse Email Lookup](https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/post.md)
+- [Get Reverse Email Result](https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/get.md): Use this endpoint to retrieve the result from a reverse email lookup.
+- [Getting Started — Search](https://docs.fullenrich.com/api/v2/general/intro-search.md): Identify the right contacts and companies to engage
+- [Search People](https://docs.fullenrich.com/api/v2/people/search/post.md): Search for people based on various filters. Multiple filters within the same field are combined with AND logic.
+- [Search Company](https://docs.fullenrich.com/api/v2/company/search/post.md): Search for companies based on various filters. Multiple filters within the same field are combined with AND logic.
+- [Look Up People](https://docs.fullenrich.com/api/v2/people/lookup/post.md): Look up a single person using their identifiers (professional network URL/ID, or full name combined with a company identifier). Returns the best matching person.
+- [Look Up Company](https://docs.fullenrich.com/api/v2/company/lookup/post.md): Look up a single company using its identifiers (domain, or professional network URL/ID). Returns the best matching company.
+- [Accepted Filter Values](https://docs.fullenrich.com/api/v2/general/enums.md): List of enums included in the output that can also be used as filters
+- [Filtering Logic Explained](https://docs.fullenrich.com/api/v2/general/filtering-logic-explained.md): How the filtering mechanism works
+- [Get Credit Balance](https://docs.fullenrich.com/api/v2/account/credits/get.md): This endpoint provides the current balance of credits available in your workspace.
+- [Check If API Key Is Valid](https://docs.fullenrich.com/api/v2/account/keys/verify/get.md): This endpoint checks if your API key is valid.
+
+## OpenAPI Specs
+
+- [openapi](https://docs.fullenrich.com/api/v2/reference/openapi.yml)
+
+## Optional
+
+- [Help Center](https://help.fullenrich.com)
+- [FullEnrich App](https://app.fullenrich.com/app/enrich)
+- [MCP Server](https://help.fullenrich.com/en/articles/14190120-mcp-server)

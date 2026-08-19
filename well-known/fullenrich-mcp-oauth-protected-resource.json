@@ -1,0 +1,1 @@
+{"authorization_servers":["https://mcp.fullenrich.com"],"bearer_methods_supported":["header"],"client_id_metadata_document_supported":true,"resource":"https://mcp.fullenrich.com/mcp","scopes_supported":["api:mcp"]}

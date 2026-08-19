@@ -1,0 +1,96 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  registry.npmjs.org, pypi.org, rubygems.org, repo.packagist.org,
+  api.github.com/orgs/FullEnrich/repos, and the FullEnrich docs/pricing pages.
+description: >-
+  FullEnrich publishes no conventional server-side client SDK in any language
+  registry. Its first-party distributed artifacts are an n8n community node on
+  npm and an MCP/Agent-Skills plugin distributed from GitHub and the MCP Registry.
+  Integration is otherwise documented as direct REST calls (Bearer API key) or
+  through the hosted MCP server.
+
+packages:
+  - language: javascript
+    registry: npm
+    name: n8n-nodes-fullenrich
+    url: https://www.npmjs.com/package/n8n-nodes-fullenrich
+    install: npm install n8n-nodes-fullenrich
+    official: true
+    official_evidence: >-
+      Source repository is github.com/FullEnrich/n8n-nodes-fullenrich, inside the
+      FullEnrich GitHub organization; package author is lina@fullenrich.com.
+    version: 0.2.2
+    published: '2026-07-26'
+    license: MIT
+    repository: https://github.com/FullEnrich/n8n-nodes-fullenrich
+    kind: workflow-automation node
+    note: >-
+      An n8n community node that calls the FullEnrich API — not a general-purpose
+      client library. It is the only FullEnrich package in any language registry.
+
+  - language: markdown
+    registry: github
+    name: fullenrich-skills
+    url: https://github.com/FullEnrich/fullenrich-skills
+    install: /plugin marketplace add FullEnrich/fullenrich-skills
+    official: true
+    official_evidence: Published in the FullEnrich GitHub organization; MIT licensed.
+    version: 1.0.3
+    published: '2026-08-11'
+    license: MIT
+    kind: Agent Skills plugin + MCP client manifests
+    note: >-
+      Nine Agent Skills plus Claude plugin, Agent Plugins, and Gemini CLI extension
+      manifests that auto-connect the hosted MCP server. Version and date read from
+      the repository's own CHANGELOG.md (1.0.3 — 2026-08-11), which the repository
+      keeps in step with the plugin manifest; there is no package-registry metadata
+      endpoint for a GitHub-distributed plugin.
+
+  - language: n/a
+    registry: mcp-registry
+    name: io.github.FullEnrich/fullenrich
+    url: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/server.json
+    install: 'MCP client config: {"mcpServers":{"fullenrich":{"url":"https://mcp.fullenrich.com/mcp"}}}'
+    official: true
+    official_evidence: >-
+      server.json in the FullEnrich GitHub organization, published to the MCP
+      Registry by a version-locked GitHub Actions OIDC workflow in the same repo.
+    version: 1.0.3
+    published: '2026-08-11'
+    kind: MCP server manifest (remote, streamable-http)
+    note: >-
+      Declares a remote endpoint only (https://mcp.fullenrich.com/mcp). No stdio
+      package is shipped, so there is nothing to install locally.
+
+absent:
+  - registry: npm
+    checked: ['fullenrich', '@fullenrich/sdk', 'fullenrich-mcp']
+    result: 404
+  - registry: pypi
+    checked: ['fullenrich', 'full-enrich']
+    result: 404
+  - registry: rubygems
+    checked: ['fullenrich']
+    result: 404
+  - registry: packagist
+    checked: ['fullenrich/fullenrich']
+    result: 404
+  - registry: maven-central
+    checked: ['fullenrich']
+    result: not published
+  - registry: nuget
+    checked: ['fullenrich']
+    result: not published
+  - registry: crates.io
+    checked: ['fullenrich']
+    result: not published
+
+gap_note: >-
+  No first-party REST client library exists for JavaScript, Python, Java, .NET, Go,
+  Ruby, PHP or Rust. The docs show raw HTTP examples and point integrators at
+  no-code platforms (Zapier, Make, Clay, n8n) or the MCP server instead. This is a
+  real ergonomics gap for teams embedding the API directly.
+
+official_sdk_count: 0
+official_package_count: 3

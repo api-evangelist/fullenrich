@@ -3,9 +3,12 @@ specificationVersion: '0.1'
 schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
 provider: FullEnrich
 providerId: fullenrich
+generated: '2026-08-14'
+method: probed
+source: https://fullenrich.com/pricing.md
 created: '2026-07-01'
-modified: '2026-07-01'
-reconciled: false
+modified: '2026-08-14'
+reconciled: true
 tags:
 - B2B Data
 - Contact Enrichment
@@ -14,27 +17,84 @@ tags:
 - Waterfall Enrichment
 - Plans
 description: >-
-  FullEnrich uses a credit-based model. Credits are only consumed when verified
-  data is found: one credit per verified work email, three credits per personal
-  email, and ten credits per mobile phone number. Failed lookups, landlines, and
-  out-of-service numbers are free. Monthly subscription tiers include a fixed
-  credit allotment, with a free trial and custom Enterprise pricing for
-  high-volume teams. Unused credits roll over (three months on monthly plans,
-  twelve months on annual plans) and all plans include unlimited users.
+  FullEnrich publishes a canonical MACHINE-READABLE pricing document at
+  https://fullenrich.com/pricing.md, explicitly written so agents can read and
+  compare it, with an embedded JSON block of every plan and volume tier. Pricing
+  is credit-based and pay-per-found: credits are consumed only when data is found
+  and passes verification. Three plans — Free trial ($0, 50 credits, no card), Pro
+  (from $29/mo monthly or $26/mo billed yearly, with eleven volume tiers), and
+  custom Enterprise. Every plan includes unlimited users, all core features
+  (waterfall enrichment, search, API, MCP, CRM integrations, bulk CSV), and credit
+  rollover of 3 months (monthly) or 12 months (annual).
 notes: >-
-  Plan names, prices, and included credits vary across FullEnrich's marketing
-  and third-party review pages and change over time. Verify the current tiers,
-  prices, and credit allotments on the FullEnrich pricing page before relying on
-  these values; this artifact is not reconciled.
+  Values below are transcribed from the provider's own machine-readable pricing
+  document, which carries last_updated 2026-07-07 in its JSON block and
+  "Last updated: July 14, 2026" in its footer. The document names itself a mirror
+  of https://fullenrich.com/pricing and states that page is the source of truth if
+  the two ever conflict.
 sources:
+- https://fullenrich.com/pricing.md
 - https://fullenrich.com/pricing
-- https://docs.fullenrich.com
+
+machineReadable:
+  markdown:
+    url: https://fullenrich.com/pricing.md
+    status: 200
+    lastUpdated: '2026-07-07'
+  json:
+    url: https://fullenrich.com/pricing.json
+    status: 404
+    note: >-
+      pricing.md advertises "Also served as JSON at
+      https://fullenrich.com/pricing.json" but that URL returns 404 (the site's
+      HTML 404 template). The JSON is still readable — it is embedded as a fenced
+      code block inside pricing.md — but the standalone endpoint the document
+      promises does not exist. Reported as a provenance issue.
+
+pricingModel:
+  type: credits_pay_per_found
+  currency: USD
+  includedUsers: unlimited
+  billingPeriods: [monthly, annual]
+  annualDiscount: ~10% vs monthly
+  rollover:
+    monthly: 3 months
+    annual: 12 months
+  principle: >-
+    A lookup that returns nothing costs nothing. A landline found instead of a
+    mobile costs nothing. ~30% of raw data is removed by verification before it
+    reaches the user.
+
+creditCosts:
+- item: Verified work email
+  credits: 1
+  note: Verified by syntax, SMTP, catch-all deep-check and confidence score.
+- item: Personal email
+  credits: 3
+- item: Mobile phone number
+  credits: 10
+  note: Mobile only — landlines are returned free.
+- item: Reverse email lookup
+  credits: 1
+- item: Person + company profile (standalone)
+  credits: 0.25
+- item: Person + company profile (bundled with an enrichment)
+  credits: 0
+- item: Search or company record exported
+  credits: 0.25
+  note: Same rate on the API and the MCP server; re-exporting an already-exported record is free.
+- item: Failed lookup / landline / out-of-service number
+  credits: 0
+
+plan_count: 3
 plans:
 - id: fullenrich-free-trial
-  name: Free Trial
+  name: Free trial
   type: trial
+  price: 0
+  currency: USD
   description: >-
-    Free credits to test waterfall enrichment before subscribing.
+    For testing data quality before committing. Full access to the Pro feature set.
   entries:
   - label: Trial Credits
     name: trial_credits
@@ -44,79 +104,167 @@ plans:
     timeFrame: once
     geo: global
     unit: 1
-    price: free
+    price: 0
     userMultiplied: false
+  features:
+  - 50 credits to start
+  - No credit card required
+  - Earn additional credits by inviting team members
+  - Waterfall enrichment, search, API, MCP, integrations
+  - Unlimited users
+  - Google SSO
+  signup: https://app.fullenrich.com/app/signUp
   elements:
   - name: Contact Enrichment
   - name: Reverse Email Lookup
+  - name: Search
+  - name: Lookup
   - name: Account Credits
-- id: fullenrich-starter
-  name: Starter
-  type: subscription
-  description: >-
-    Entry monthly plan with a fixed credit allotment; unlimited users, credits
-    roll over for three months.
-  entries:
-  - label: Included Credits
-    name: starter_credits
-    type: fixed
-    metric: credits
-    limit: 500
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: see FullEnrich pricing page
-    userMultiplied: false
-  elements:
-  - name: Contact Enrichment
-  - name: Reverse Email Lookup
-  - name: Account Credits
-- id: fullenrich-growth
-  name: Growth
-  type: subscription
-  description: >-
-    Mid-tier monthly plan for scaling teams with a larger credit allotment.
-  entries:
-  - label: Included Credits
-    name: growth_credits
-    type: fixed
-    metric: credits
-    limit: 2000
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: see FullEnrich pricing page
-    userMultiplied: false
-  elements:
-  - name: Contact Enrichment
-  - name: Reverse Email Lookup
-  - name: Account Credits
+
 - id: fullenrich-pro
   name: Pro
   type: subscription
   description: >-
-    High-volume monthly plan with the largest standard credit allotment.
+    For teams that want data on demand to power their GTM or product. Every core
+    feature is included at every volume tier; only the credit allotment and the
+    per-credit price change.
+  entryPrice:
+    monthly: 29
+    annual_per_month: 26
+    currency: USD
+  features:
+  - Waterfall enrichment across 25+ sources
+  - Advanced email & phone verification
+  - Live company & person enrichment
+  - People & company search — 800M people, 50M companies, 15+ filters each
+  - Bulk CSV enrichment and exports
+  - CRM integrations (HubSpot, Salesforce)
+  - API access and no-code integrations
+  - MCP server
+  - Unlimited users
+  - Credit rollover (3 months monthly, 12 months yearly)
+  - Credit limits per user, per-user credit monitoring, low-credit alerts
   entries:
-  - label: Included Credits
-    name: pro_credits
-    type: fixed
+  - label: Monthly volume tiers
+    name: pro_monthly
+    type: tiered
     metric: credits
-    limit: 6000
     timeFrame: month
     geo: global
-    unit: 1
-    price: see FullEnrich pricing page
-    userMultiplied: false
+    currency: USD
+    tiers:
+    - credits: 500
+      price: 29
+      perCredit: 0.058
+    - credits: 750
+      price: 42.75
+      perCredit: 0.057
+    - credits: 1000
+      price: 55
+      perCredit: 0.055
+    - credits: 1500
+      price: 79.5
+      perCredit: 0.053
+    - credits: 2000
+      price: 104
+      perCredit: 0.052
+    - credits: 5000
+      price: 255
+      perCredit: 0.051
+    - credits: 10000
+      price: 499
+      perCredit: 0.05
+    - credits: 15000
+      price: 720
+      perCredit: 0.048
+    - credits: 25000
+      price: 1150
+      perCredit: 0.046
+    - credits: 50000
+      price: 1950
+      perCredit: 0.039
+    - credits: 100000
+      price: 3500
+      perCredit: 0.035
+    overage: 'Above 100,000 credits/month: contact sales.'
+  - label: Annual volume tiers
+    name: pro_annual
+    type: tiered
+    metric: credits
+    timeFrame: year
+    geo: global
+    currency: USD
+    tiers:
+    - credits: 6000
+      pricePerMonth: 26
+      pricePerYear: 312
+      perCredit: 0.052
+    - credits: 9000
+      pricePerMonth: 39
+      pricePerYear: 468
+      perCredit: 0.052
+    - credits: 12000
+      pricePerMonth: 49
+      pricePerYear: 588
+      perCredit: 0.049
+    - credits: 18000
+      pricePerMonth: 71
+      pricePerYear: 852
+      perCredit: 0.047
+    - credits: 24000
+      pricePerMonth: 94
+      pricePerYear: 1128
+      perCredit: 0.047
+    - credits: 60000
+      pricePerMonth: 232
+      pricePerYear: 2784
+      perCredit: 0.046
+    - credits: 120000
+      pricePerMonth: 454
+      pricePerYear: 5448
+      perCredit: 0.045
+    - credits: 180000
+      pricePerMonth: 655
+      pricePerYear: 7860
+      perCredit: 0.044
+    - credits: 300000
+      pricePerMonth: 1046
+      pricePerYear: 12552
+      perCredit: 0.042
+    - credits: 600000
+      pricePerMonth: 1769
+      pricePerYear: 21228
+      perCredit: 0.035
+    - credits: 1200000
+      pricePerMonth: 3150
+      pricePerYear: 37800
+      perCredit: 0.032
+    overage: 'Above 1,200,000 credits/year: contact sales.'
   elements:
   - name: Contact Enrichment
   - name: Reverse Email Lookup
+  - name: Search
+  - name: Lookup
   - name: Account Credits
+  - name: MCP Server
+
 - id: fullenrich-enterprise
   name: Enterprise
   type: enterprise
+  price: custom
   description: >-
-    Custom pricing, volume credit commitments, and dedicated support for
-    high-volume teams. Contact FullEnrich sales.
+    For large GTM teams, agencies, and products embedding FullEnrich. Everything in
+    Pro, plus commercial and governance controls.
+  contact: https://fullenrich.com/talk-to-sales
+  features:
+  - Priority support, dedicated account manager, shared Slack channel
+  - Custom rate limits & priority queue
+  - Flexible billing terms
+  - BYOK (bring your own API key)
+  - Custom SSO & security add-ons (custom IdP)
+  - Team governance and workspace setup
+  - 'Resellers & embedded API: reseller agreement, sub API accounts'
+  - 'Agencies: marketplace listing, co-marketing, multi-client workflow support'
   entries:
   - label: Enterprise Agreement
     name: enterprise
@@ -131,15 +279,20 @@ plans:
   elements:
   - name: Custom Volume Credits
   - name: Dedicated Support
-creditCosts:
-- item: Verified work email
-  credits: 1
-- item: Personal email
-  credits: 3
-- item: Mobile phone number
-  credits: 10
-- item: Failed lookup / landline / out-of-service number
-  credits: 0
+  - name: Custom Rate Limits
+
+developerCredits:
+  available: true
+  audience: agent builders
+  contact: nylan@fullenrich.com
+  source: https://fullenrich.com/pricing.md
+
+agentPricingNote: >-
+  The MCP surface prices exploration at zero: a search returns the first 10 results
+  plus the total count for free, and credits are only spent on export (0.25 each)
+  or enrichment. FullEnrich states the intent explicitly — "searching should feel
+  like exploring, not like a commitment".
+
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com

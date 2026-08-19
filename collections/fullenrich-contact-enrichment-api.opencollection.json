@@ -1,0 +1,89 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "FullEnrich Account Contact Enrichment API",
+    "version": "2.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Contact Enrichment",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get bulk enrichment results by enrichment id",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://app.fullenrich.com/api/v2/contact/enrich/bulk",
+            "params": [
+              {
+                "name": "enrichment_id",
+                "value": "",
+                "type": "query",
+                "description": "The enrichment_id returned when the enrichment was started."
+              },
+              {
+                "name": "forceResults",
+                "value": "",
+                "type": "query",
+                "description": "Return partial results even if the enrichment is not finished."
+              }
+            ]
+          },
+          "docs": "Retrieve the results of a bulk enrichment. The enrichment_id may be supplied as a path segment (/contact/enrich/bulk/{enrichment_id}) or as a query parameter, depending on client convention."
+        },
+        {
+          "info": {
+            "name": "Start a bulk contact enrichment",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://app.fullenrich.com/api/v2/contact/enrich/bulk",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Submit up to 100 contacts for waterfall enrichment. Each contact needs first_name and last_name plus either domain or company_name, or a linkedin_url. Returns an enrichment_id used to retrieve results."
+        },
+        {
+          "info": {
+            "name": "Get bulk enrichment results",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://app.fullenrich.com/api/v2/contact/enrich/bulk/:enrichment_id",
+            "params": [
+              {
+                "name": "enrichment_id",
+                "value": "",
+                "type": "path",
+                "description": "The unique identifier returned when the enrichment was started."
+              },
+              {
+                "name": "forceResults",
+                "value": "",
+                "type": "query",
+                "description": "Return partial results even if the enrichment is not finished."
+              }
+            ]
+          },
+          "docs": "Retrieve the results of a bulk enrichment by its enrichment_id. The response includes the run status, credits consumed, and per-contact enriched contact info and profile data."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

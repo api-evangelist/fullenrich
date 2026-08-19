@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
-  title: FullEnrich Reverse Email Lookup API
-  description: Resolve the person and company behind an email address in bulk. FullEnrich API enables
+  title: FullEnrich Lookup API
+  description: Look up a single best-matching person or company from identifiers. FullEnrich API enables
     you to enrich B2B contacts with emails and phone numbers using data from 20+ providers.  We are GDPR
     and CCPA compliant.
   version: 2.0.0
@@ -14,45 +14,35 @@ servers:
 security:
 - BearerAuth: []
 tags:
-- name: Reverse Email Lookup
-  description: Resolve the person and company behind an email address in bulk.
+- name: Lookup
+  description: Look up a single best-matching person or company from identifiers.
 paths:
-  /contact/reverse/email/bulk:
+  /people/lookup:
     post:
-      summary: Reverse Contact Lookup In Bulk
-      description: ''
-      operationId: postContactBulkReverseEmail
+      summary: Look up people
+      description: Look up a single person using their identifiers (professional network URL/ID, or full
+        name combined with a company identifier). Returns the best matching person.
+      operationId: postPeopleLookup
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RequestPostContactBulkReverseEmail'
+              $ref: '#/components/schemas/LookUpPeopleRequest'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponsePostContactBulkReverseEmail'
+                allOf:
+                - $ref: '#/components/schemas/LookUpPeopleResponse'
+                - $ref: '#/components/schemas/LookUpMetadata'
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              examples:
-                ReverseEmailInvalid:
-                  value:
-                    code: error.reverse.email.invalid
-                    message: Email is invalid
-                ReverseEmailNotSet:
-                  value:
-                    code: error.reverse.email.empty
-                    message: Email cannot be empty
-                WebhookURLInvalid:
-                  value:
-                    code: error.enrichment.webhook_url
-                    message: Webhook URL must be start with http or https
         '401':
           description: Unauthorized
           content:
@@ -72,170 +62,47 @@ paths:
                   value:
                     code: error.api.key
                     message: Unknown api key
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                RateLimitExceeded:
+                  value:
+                    code: error.rate.limit
+                    message: Too many requests. Try again in 1m
       security:
       - BearerAuth: []
       tags:
-      - Reverse Email Lookup
-  /contact/reverse/email/bulk/{enrichment_id}:
-    get:
-      summary: Get Bulk Reverse Email Results
-      description: Use this endpoint to retrieve the result from a reverse email lookup.
-      operationId: GetContactBulkReverseEmailByID
-      parameters:
-      - name: enrichment_id
-        in: path
-        required: true
-        description: The unique identifier returned when the reverse lookup was started
-        schema:
-          type: string
-        example: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+      - Lookup
+  /company/lookup:
+    post:
+      summary: Look up company
+      description: Look up a single company using its identifiers (domain, or professional network URL/ID).
+        Returns the best matching company.
+      operationId: postCompanyLookup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LookUpCompanyRequest'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseGetContactBulkReverseEmail'
-              example:
-                id: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
-                name: Reverse Email Lookup
-                status: FINISHED
-                cost:
-                  credits: 1
-                data:
-                - input:
-                    email: johnsnow@gmail.com
-                  custom:
-                    user_id: '12584'
-                  profile:
-                    id: 746e4816-19c8-54d8-b558-65a5a52cc85c
-                    full_name: John Snow
-                    first_name: John
-                    last_name: Snow
-                    headline: Head of Sales Operations at Example Inc | Revenue Operations, CRM & Sales
-                      Enablement
-                    description: Sales operations leader focused on revenue processes, CRM architecture
-                      and sales enablement. I help go-to-market teams scale pipeline with clean data and
-                      reliable reporting.
-                    location:
-                      country: United States
-                      country_code: US
-                      city: San Francisco
-                      region: California
-                    social_profiles:
-                      professional_network:
-                        url: https://www.linkedin.com/in/demoge/
-                        handle: demoge
-                        connection_count: 500
-                    educations:
-                    - school_name: Stanford University
-                      degree: Bachelor of Science in Computer Science
-                      start_at: '2015-09-01T00:00:00Z'
-                      end_at: '2019-06-01T00:00:00Z'
-                    languages:
-                    - language: English
-                      proficiency: PROFESSIONAL_WORKING
-                    - language: French
-                      proficiency: NATIVE_OR_BILINGUAL
-                    skills:
-                    - Sales Operations
-                    - Business Development
-                    - CRM Management
-                    employment:
-                      current:
-                        title: Head of Sales Operations
-                        is_current: true
-                        start_at: '2022-03-15T00:00:00Z'
-                        company:
-                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-                          name: Example Inc
-                          domain: example.com
-                          website: https://www.example.com
-                          description: Leading example company
-                          year_founded: 2010
-                          headcount: 250
-                          company_type: Privately Held
-                          locations:
-                            headquarters:
-                              line1: 123 Market St
-                              line2: San Francisco, CA 94105, US
-                              city: San Francisco
-                              region: California
-                              country: United States
-                              country_code: US
-                            offices:
-                            - line1: 456 Broadway
-                              line2: New York, NY 10013, US
-                          industry:
-                            main_industry: Software Development
-                          social_profiles:
-                            professional_network:
-                              url: https://www.linkedin.com/company/example-inc
-                              handle: example-inc
-                              connection_count: 12000
-                          logo_url: https://app.fullenrich.com/logo/company/handle/example-inc
-                      all:
-                      - title: Head of Sales Operations
-                        is_current: true
-                        start_at: '2022-03-15T00:00:00Z'
-                        company:
-                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-                          name: Example Inc
-                          domain: example.com
-                          website: https://www.example.com
-                          description: Leading example company
-                          year_founded: 2010
-                          headcount: 250
-                          company_type: Privately Held
-                          locations:
-                            headquarters:
-                              line1: 123 Market St
-                              line2: San Francisco, CA 94105, US
-                              city: San Francisco
-                              region: California
-                              country: United States
-                              country_code: US
-                            offices:
-                            - line1: 456 Broadway
-                              line2: New York, NY 10013, US
-                          industry:
-                            main_industry: Software Development
-                          social_profiles:
-                            professional_network:
-                              url: https://www.linkedin.com/company/example-inc
-                              handle: example-inc
-                              connection_count: 12000
-                          logo_url: https://app.fullenrich.com/logo/company/handle/example-inc
-                      - title: Sales Manager
-                        is_current: false
-                        start_at: '2019-07-01T00:00:00Z'
-                        end_at: '2022-03-01T00:00:00Z'
-                        company:
-                          id: b2c3d4e5-f6a7-8901-bcde-f12345678901
-                          name: Previous Corp
-                          domain: previouscorp.com
-                          website: https://www.previouscorp.com
-                          description: Enterprise software solutions
-                          year_founded: 2005
-                          headcount: 500
-                          company_type: Privately Held
-                          locations:
-                            headquarters:
-                              line1: 789 5th Ave
-                              line2: New York, NY 10022, US
-                              city: New York
-                              region: New York
-                              country: United States
-                              country_code: US
-                            offices: []
-                          industry:
-                            main_industry: Software Development
-                          social_profiles:
-                            professional_network:
-                              url: https://www.linkedin.com/company/previous-corp
-                              handle: previous-corp
-                              connection_count: 8000
-                          logo_url: https://app.fullenrich.com/logo/company/handle/previous-corp
+                allOf:
+                - $ref: '#/components/schemas/LookUpCompanyResponse'
+                - $ref: '#/components/schemas/LookUpMetadata'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -255,29 +122,110 @@ paths:
                   value:
                     code: error.api.key
                     message: Unknown api key
-        '402':
-          description: Payment Required
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseGetContactBulkReverseEmail'
-        '404':
-          description: Not Found
+        '429':
+          description: Too Many Requests
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               examples:
-                ReverseEmailNotFound:
+                RateLimitExceeded:
                   value:
-                    code: error.reverse.email.not_found
-                    message: Reverse email ID not found
+                    code: error.rate.limit
+                    message: Too many requests. Try again in 1m
       security:
       - BearerAuth: []
       tags:
-      - Reverse Email Lookup
+      - Lookup
 components:
   schemas:
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique company identifier
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        name:
+          type: string
+          description: Company name
+          example: Anthropic
+        domain:
+          type: string
+          description: Company domain
+          example: anthropic.com
+        website:
+          type: string
+          description: Company website URL as declared by the company. May differ from `domain` (can include
+            a subdomain, a path or tracking parameters). Omitted when not available.
+          example: https://www.anthropic.com
+        description:
+          type: string
+          description: Company description
+          example: AI safety and research company building reliable, interpretable, and steerable AI systems.
+        year_founded:
+          type: integer
+          description: Year the company was founded. Returns 0 when unknown.
+          example: 2021
+        headcount:
+          type: integer
+          description: Exact number of employees. May return 0 even when headcount_range is available.
+          example: 2610
+        headcount_range:
+          type: string
+          description: Employee count range (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000',
+            '5001-10000', '10001+')
+          example: 1001-5000
+        company_type:
+          type: string
+          description: Type of company (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed',
+            'Partnership', 'Educational', 'Government Agency')
+          example: Privately Held
+        locations:
+          type: object
+          description: Company location information
+          properties:
+            headquarters:
+              type: object
+              description: Main headquarters address with structured location fields. Can be an empty
+                object when no headquarters data is available.
+              allOf:
+              - $ref: '#/components/schemas/CompanyAddress'
+            offices:
+              type: array
+              description: Additional office locations. Only contains raw address lines (line1, line2)
+                without structured city/region/country fields. Can be null or an empty array.
+              nullable: true
+              items:
+                $ref: '#/components/schemas/OfficeAddress'
+        social_profiles:
+          type: object
+          description: Company's social media profiles
+          allOf:
+          - $ref: '#/components/schemas/CompanySocialProfile'
+        specialties:
+          type: array
+          description: Specialties associated with the company
+          items:
+            type: string
+          example:
+          - artificial intelligence
+          - machine learning
+          - AI safety
+        industry:
+          type: object
+          description: Company industry information
+          properties:
+            main_industry:
+              type: string
+              description: Primary industry category (e.g., 'Software Development', 'Computer Hardware
+                Manufacturing', 'Financial Services', 'Healthcare', 'Retail')
+              example: Software Development
+        logo_url:
+          type: string
+          description: URL of the company logo hosted by FullEnrich, built from the company's professional
+            network handle. Empty when the handle is unknown.
+          example: https://app.fullenrich.com/logo/company/handle/anthropic
     CompanyAddress:
       type: object
       description: Structured headquarters address with parsed location fields
@@ -330,23 +278,6 @@ components:
               type: integer
               description: Number of professional network followers
               example: 125000
-    ContactReverseEmailInput:
-      type: object
-      properties:
-        email:
-          type: string
-          examples:
-          - john.snow@example.com
-    Cost:
-      type: object
-      properties:
-        credits:
-          type: integer
-          format: int64
-          description: Number of credits consumed for this enrichment
-          examples:
-          - 1
-          - 0
     Employment:
       type: object
       properties:
@@ -492,6 +423,83 @@ components:
       required:
       - code
       - message
+    LookUpCompanyRequest:
+      type: object
+      description: Provide at least one identifier to match a single company. The domain or professional
+        network URL/ID give the most reliable match.
+      properties:
+        domain:
+          type: string
+          description: Company domain to look up.
+          example: anthropic.com
+        professional_network_url:
+          type: string
+          description: Professional network URL of the company.
+          example: https://www.linkedin.com/company/anthropic
+        professional_network_id:
+          type: integer
+          description: Professional network ID of the company.
+          example: 1883877
+    LookUpCompanyResponse:
+      type: object
+      properties:
+        companies:
+          type: array
+          description: Array containing the matching company. Returns an empty array if no match is found.
+          items:
+            $ref: '#/components/schemas/Company'
+    LookUpMetadata:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            credits:
+              type: number
+              format: double
+              description: Total number of credits consumed
+              example: 0.25
+    LookUpPeopleRequest:
+      type: object
+      description: Provide at least one identifier to match a single person. The professional network
+        URL or ID is the most reliable. A full name can be combined with a company identifier (domain,
+        professional network URL, or professional network ID) to disambiguate the match.
+      properties:
+        person_name:
+          type: string
+          description: Full name of the person to look up.
+          example: Enzo Romera
+        person_professional_network_url:
+          type: string
+          description: Professional network profile URL of the person.
+          example: https://www.linkedin.com/in/enzo-romera
+        person_professional_network_id:
+          type: integer
+          description: Professional network profile ID of the person.
+          example: 530992355
+        company_professional_network_url:
+          type: string
+          description: Professional network URL of the company the person works for. Used to disambiguate
+            when looking up by name.
+          example: https://www.linkedin.com/company/anthropic
+        company_professional_network_id:
+          type: integer
+          description: Professional network ID of the company the person works for. Used to disambiguate
+            when looking up by name.
+          example: 1883877
+        company_domain:
+          type: string
+          description: Domain of the company the person works for. Used to disambiguate when looking up
+            by name.
+          example: anthropic.com
+    LookUpPeopleResponse:
+      type: object
+      properties:
+        people:
+          type: array
+          description: Array containing the matching person. Returns an empty array if no match is found.
+          items:
+            $ref: '#/components/schemas/Person'
     OfficeAddress:
       type: object
       description: Office address. Unlike headquarters, office addresses only contain raw address lines
@@ -651,99 +659,6 @@ components:
               type: integer
               description: Number of professional network connections
               example: 500
-    RecordReverseEmail:
-      type: object
-      properties:
-        input:
-          $ref: '#/components/schemas/ContactReverseEmailInput'
-        custom:
-          type: object
-          examples:
-          - user_id: '12584'
-        profile:
-          $ref: '#/components/schemas/Person'
-    RequestPostContactBulkReverseEmail:
-      type: object
-      properties:
-        name:
-          type: string
-          description: A readable name for this reverse lookup (visible in your dashboard)
-          example: Reverse Lookup Batch 1
-        webhook_url:
-          type: string
-          description: URL that will receive a POST request when the entire reverse lookup is finished
-            (all emails processed).
-          example: https://example.com/webhook
-        webhook_events:
-          type: object
-          description: Optional webhook URLs for specific events during reverse lookup
-          properties:
-            contact_finished:
-              type: string
-              description: URL that receives a POST request each time a single email is processed, without
-                waiting for the entire batch to complete.
-              example: https://example.com/webhook/contact
-        data:
-          type: array
-          items:
-            type: object
-            properties:
-              email:
-                type: string
-                description: Email address to perform reverse lookup on
-                example: john.snow@example.com
-              custom:
-                type: object
-                description: Custom fields returned in the result (max 10 keys, 100 chars per value)
-                example:
-                  user_id: '12584'
-            required:
-            - email
-          example:
-          - email: john.snow@example.com
-            custom:
-              user_id: '12584'
-      required:
-      - name
-      - data
-    ResponseGetContactBulkReverseEmail:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          examples:
-          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
-        name:
-          type: string
-          examples:
-          - Start Reverse Email Lookup Operation
-        status:
-          type: string
-          examples:
-          - FINISHED
-          enum:
-          - CREATED
-          - IN_PROGRESS
-          - CANCELED
-          - CREDITS_INSUFFICIENT
-          - FINISHED
-          - RATE_LIMIT
-          - UNKNOWN
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/RecordReverseEmail'
-        cost:
-          $ref: '#/components/schemas/Cost'
-    ResponsePostContactBulkReverseEmail:
-      type: object
-      properties:
-        enrichment_id:
-          type: string
-          format: uuid
-          examples:
-          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
   securitySchemes:
     BearerAuth:
       type: http

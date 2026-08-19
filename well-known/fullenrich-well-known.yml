@@ -1,0 +1,184 @@
+generated: '2026-08-14'
+method: probed
+source: >-
+  Live GET of the /.well-known/ discovery surface on every FullEnrich host in
+  apis.yml plus the OpenAPI servers[] host.
+description: >-
+  FullEnrich serves a real OAuth discovery surface on two hosts: the product API
+  host (app.fullenrich.com, RFC 8414 + OIDC discovery with 13 scopes) and the MCP
+  host (mcp.fullenrich.com, RFC 8414 + RFC 9728 protected-resource metadata). It
+  serves no security.txt, no api-catalog and no ai-plugin.json of its own.
+soft_200_warning: >-
+  app.fullenrich.com and mcp.fullenrich.com answer HTTP 200 with an HTML
+  application shell for ANY unknown /.well-known/* path. Those 200s are catch-alls,
+  not documents, and are recorded below as misses. Only responses with
+  content-type application/json carrying a real document are counted as hits.
+
+hosts:
+  - host: https://app.fullenrich.com
+    role: API host (OpenAPI servers[] + apis.yml baseURL)
+    documents:
+      - path: /.well-known/openid-configuration
+        status: 200
+        content_type: application/json
+        hit: true
+        file: fullenrich-app-openid-configuration.json
+      - path: /.well-known/oauth-authorization-server
+        status: 200
+        content_type: application/json
+        hit: true
+        file: fullenrich-app-oauth-authorization-server.json
+        note: Byte-identical to the openid-configuration document (same handler).
+      - path: /.well-known/security.txt
+        status: 200
+        content_type: text/html
+        hit: false
+        note: SPA catch-all HTML, not an RFC 9116 document.
+      - path: /.well-known/api-catalog
+        status: 200
+        content_type: text/html
+        hit: false
+        note: SPA catch-all HTML.
+      - path: /.well-known/ai-plugin.json
+        status: 200
+        content_type: text/html
+        hit: false
+        note: SPA catch-all HTML.
+      - path: /.well-known/agent-card.json
+        status: 200
+        content_type: text/html
+        hit: false
+        note: SPA catch-all HTML.
+      - path: /.well-known/agent.json
+        status: 200
+        content_type: text/html
+        hit: false
+        note: SPA catch-all HTML.
+
+  - host: https://mcp.fullenrich.com
+    role: MCP server host
+    documents:
+      - path: /.well-known/oauth-authorization-server
+        status: 200
+        content_type: application/json
+        hit: true
+        file: fullenrich-mcp-oauth-authorization-server.json
+      - path: /.well-known/oauth-protected-resource
+        status: 200
+        content_type: application/json
+        hit: true
+        file: fullenrich-mcp-oauth-protected-resource.json
+        note: RFC 9728. Also served at /.well-known/oauth-protected-resource/mcp (identical).
+      - path: /.well-known/openid-configuration
+        status: 200
+        content_type: application/json
+        hit: true
+        note: Identical to the oauth-authorization-server document; not stored twice.
+      - path: /.well-known/security.txt
+        status: 200
+        content_type: text/html
+        hit: false
+      - path: /.well-known/api-catalog
+        status: 200
+        content_type: text/html
+        hit: false
+      - path: /.well-known/ai-plugin.json
+        status: 200
+        content_type: text/html
+        hit: false
+      - path: /.well-known/agent-card.json
+        status: 200
+        content_type: text/html
+        hit: false
+
+  - host: https://docs.fullenrich.com
+    role: Documentation host
+    documents:
+      - path: /.well-known/agent-card.json
+        status: 200
+        content_type: application/json
+        hit: true
+        file: ../a2a/fullenrich-agent-card.json
+        note: Real A2A Agent Card — graded in a2a/fullenrich-a2a.yml.
+      - path: /.well-known/agent-skills/full-enrich/skill.md
+        status: 200
+        content_type: text/markdown
+        hit: true
+        file: ../skills/fullenrich-full-enrich.md
+        note: Provider-published Agent Skill referenced by the agent card.
+      - path: /.well-known/security.txt
+        status: 404
+        hit: false
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+        hit: false
+      - path: /.well-known/api-catalog
+        status: 404
+        hit: false
+      - path: /.well-known/ai-plugin.json
+        status: 404
+        hit: false
+      - path: /.well-known/agent.json
+        status: 404
+        hit: false
+      - path: /.well-known/openid-configuration
+        status: 200
+        content_type: text/html
+        hit: false
+        note: Mintlify docs shell, not an OIDC document.
+
+  - host: https://fullenrich.com
+    role: Website
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+        hit: false
+      - path: /.well-known/openid-configuration
+        status: 404
+        hit: false
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+        hit: false
+      - path: /.well-known/api-catalog
+        status: 404
+        hit: false
+      - path: /.well-known/ai-plugin.json
+        status: 404
+        hit: false
+      - path: /.well-known/agent-card.json
+        status: 404
+        hit: false
+      - path: /.well-known/agent.json
+        status: 404
+        hit: false
+
+  - host: https://help.fullenrich.com
+    role: Help center (hosted by Intercom)
+    documents:
+      - path: /.well-known/security.txt
+        status: 200
+        content_type: text/plain
+        hit: false
+        third_party: true
+        note: >-
+          A real RFC 9116 document is served here, but it is INTERCOM'S security.txt,
+          not FullEnrich's — help.fullenrich.com is a CNAME onto Intercom's help-center
+          platform and the file reports vulnerabilities to Intercom. It is NOT counted
+          as a FullEnrich-served security.txt and no SecurityTxt pointer is emitted
+          for it. FullEnrich's own disclosure policy is at
+          github.com/FullEnrich/fullenrich-skills/blob/HEAD/SECURITY.md — see
+          security/fullenrich-vulnerability-disclosure.yml.
+      - path: /.well-known/openid-configuration
+        status: 404
+        hit: false
+      - path: /.well-known/agent-card.json
+        status: 404
+        hit: false
+
+summary:
+  real_documents_found: 6
+  security_txt_served_by_provider: false
+  api_catalog_served: false
+  ai_plugin_served: false
+  oauth_discovery_served: true
+  agent_card_served: true

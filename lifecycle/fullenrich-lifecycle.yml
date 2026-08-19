@@ -1,0 +1,97 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  https://docs.fullenrich.com/ (llms.txt index), /api/v2/general/credit,
+  /implement-in-product/production, https://status.fullenrich.com,
+  https://fullenrich.com/tos, and derivation from
+  openapi/_original/fullenrich-openapi.yml.
+description: >-
+  FullEnrich versions its API in the URI path and is currently on v2. It runs a
+  public per-service status page with rolling uptime, but publishes no deprecation
+  policy, no API changelog, and no numeric uptime SLA.
+
+versioning:
+  scheme: uri-path
+  current: v2
+  base_url: https://app.fullenrich.com/api/v2
+  spec_version: 2.0.0
+  version_header: null
+  docs: https://docs.fullenrich.com/
+  notes: >-
+    v1 is superseded by v2; no v1 documentation remains published. The docs site
+    itself is organized under /api/v2/, so the version is baked into the
+    documentation URL structure as well as the base URL.
+
+deprecation:
+  policy_url: null
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  deprecated_operations: []
+  notes: >-
+    No deprecation or sunset policy is published anywhere on fullenrich.com,
+    docs.fullenrich.com or the help center, and no operation, parameter or schema
+    in the OpenAPI carries `deprecated: true`. RFC 8594 Sunset/Deprecation headers
+    are not documented. An integrator has no published notice period for a
+    breaking change.
+
+changelog:
+  api_changelog_url: null
+  published: false
+  notes: >-
+    No API changelog exists. The llms.txt documentation index lists no changelog
+    page, and probing /api/v2/general/changelog returns the Mintlify catch-all
+    (the docs host answers 200 for any unknown path, so that 200 is not evidence
+    of a page). The only dated change history FullEnrich publishes is
+    CHANGELOG.md in the fullenrich-skills repository, which versions the Agent
+    Skills plugin — not the API. Recorded in packages/fullenrich-packages.yml.
+
+sla:
+  url: https://fullenrich.com/tos
+  public_uptime_target: null
+  notes: >-
+    No numeric uptime commitment is published. Enterprise plans advertise custom
+    rate limits, a priority queue, priority support and flexible billing terms,
+    which implies availability commitments are handled in the Enterprise contract.
+  enterprise_terms: >-
+    The published Terms and Conditions of Use and Sale (last updated 2026-08-11)
+    note they are the default T&Cs and can be adjusted for technology or service
+    partners.
+
+status_page:
+  url: https://status.fullenrich.com
+  published: true
+  granularity: per service
+  services:
+    - name: app.fullenrich.com/app
+      rolling_uptime: 99.962%
+  features: [current status, per-service rolling uptime history, maintenance, previous incidents]
+  observations:
+    - >-
+      The status page tracks the web application host. It does not list the API
+      base host, the MCP server (mcp.fullenrich.com) or the docs host as separate
+      monitored services, so an API-only or agent-only consumer cannot see whether
+      their surface specifically is degraded.
+
+data_retention:
+  enrichment_results: 3 months
+  event_logs: 1 year (encrypted at rest)
+  rationale: GDPR compliance
+  consequence: >-
+    An enrichment_id older than 3 months no longer resolves; re-enriching after the
+    window launches a fresh, billable enrichment. This is a lifecycle constraint on
+    the DATA, not just the API.
+  source: https://docs.fullenrich.com/api/v2/general/credit
+
+production_guidance:
+  url: https://docs.fullenrich.com/api/v2/implement-in-product/production
+  highlights:
+    - Prefer webhooks over polling for result collection.
+    - Enable low-credit alerts before running production workloads.
+    - Contact the team to raise rate limits or queue size for technology partners.
+
+gaps:
+  - No deprecation policy or notice period.
+  - No API changelog.
+  - No numeric uptime SLA.
+  - Status page does not monitor the API host or the MCP server separately.

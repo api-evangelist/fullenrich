@@ -1,0 +1,105 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  https://docs.fullenrich.com/api/v2/general/credit ("Tips for testing"),
+  /general/webhooks, https://fullenrich.com/pricing.md,
+  https://help.fullenrich.com/en/articles/14190120-mcp-server
+description: >-
+  FullEnrich has no separate sandbox environment and no test-mode key prefix —
+  there is one live API and one key. What it publishes instead is a set of
+  zero-cost testing affordances: hard-coded team contacts that enrich for 0
+  credits, a free trial with 50 credits and no card, credit-free deduplication of
+  repeat lookups, and a free search preview on the MCP surface.
+
+separation_model:
+  test_environment: none
+  test_mode_key_prefix: none
+  detail: >-
+    There is no sk_test/sk_live style separation. Every call from every key hits
+    production data and can spend credits. Cost control is by credit semantics and
+    the magic test values below, not by environment.
+
+magic_test_values:
+  - name: Zero-credit team contact
+    kind: hard-coded contact
+    detail: >-
+      FullEnrich hard-codes contacts belonging to its own team that enrich for
+      0 credits. The docs publish this exact record and warn that the values must
+      match exactly or the zero-cost path will not trigger.
+    value:
+      first_name: "Grégoire"
+      last_name: "Démogé"
+      domain: fullenrich.com
+      company_name: FullEnrich
+      linkedin_url: https://www.linkedin.com/in/demoge/
+    cost: 0 credits
+    source: https://docs.fullenrich.com/api/v2/general/credit
+    caution: >-
+      Published verbatim by the provider as test data. It is a real person at
+      FullEnrich; it is documented for API testing only.
+
+zero_cost_paths:
+  - name: Failed lookup
+    detail: A lookup that finds nothing costs 0 credits.
+  - name: Landline or out-of-service number
+    detail: A landline found instead of a mobile costs 0 credits.
+  - name: Repeat enrichment within 3 months
+    detail: >-
+      Re-enriching the same contact within the retention window returns the stored
+      result from history and costs 0 credits — so the docs recommend reusing one
+      contact for most testing, which is also faster (no waterfall re-run).
+    caveats:
+      - Input must match; any variation in name, domain or LinkedIn URL breaks dedup.
+      - No deduplication within the same bulk.
+      - Concurrent identical requests are not deduplicated.
+  - name: Person/company profile bundled with enrichment
+    detail: Profile data is free when returned alongside an enrichment (0.25 credits standalone).
+  - name: MCP search preview
+    detail: >-
+      On the MCP surface, a search returns the first 10 results plus the total count
+      for free. Credits are only spent on export (0.25/record) or enrichment.
+    source: https://help.fullenrich.com/en/articles/14190120-mcp-server
+
+free_tier:
+  name: Free trial
+  credits: 50
+  price: 0
+  credit_card_required: false
+  feature_access: full Pro feature set (waterfall enrichment, search, API, MCP, integrations)
+  extra_credits: earned by inviting team members
+  signup: https://app.fullenrich.com/app/signUp
+  source: https://fullenrich.com/pricing.md
+
+developer_credits:
+  available: true
+  audience: agent builders
+  contact: nylan@fullenrich.com
+  detail: >-
+    The machine-readable pricing document invites agent builders to request
+    development credits by email.
+  source: https://fullenrich.com/pricing.md
+
+webhook_testing:
+  recommended_tool: https://webhook.site
+  detail: >-
+    The docs recommend a free webhook.site temporary URL to receive and inspect the
+    callback payload while integrating, both on the webhooks page and in the
+    testing tips.
+
+api_key_validation:
+  operation: checkKey
+  path: GET /account/keys/verify
+  detail: A zero-cost call that confirms a key is active before running any billable work.
+
+credit_balance_check:
+  operation: getAccountCredits
+  path: GET /account/credits
+  detail: >-
+    Zero-cost balance read. The docs recommend enabling low-credit alerts at
+    https://app.fullenrich.com/app/settings/credits/alerts/ for production use.
+
+gaps:
+  - No isolated sandbox environment or test-mode credentials.
+  - No published fixture/trigger tooling to force a specific enrichment status (e.g. CREDITS_INSUFFICIENT, RATE_LIMIT).
+  - No test values documented for the Search or Lookup endpoints — the zero-cost contact covers enrichment only.
+  - No time simulation / test clocks.

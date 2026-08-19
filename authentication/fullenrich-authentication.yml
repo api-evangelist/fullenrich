@@ -1,14 +1,118 @@
-generated: '2026-07-11'
-method: derived
-source: openapi/fullenrich-openapi.yml
+generated: '2026-08-14'
+method: searched
+source: openapi/_original/fullenrich-openapi.yml
+docs: https://docs.fullenrich.com/api/v2/general/authentication
+description: >-
+  FullEnrich runs three distinct authentication surfaces. The public REST API uses
+  a static workspace API key passed as a Bearer token. The application host runs a
+  full OAuth 2.0 / OIDC authorization server with 13 granular scopes (discovered
+  via RFC 8414 metadata, used by first-party integrations and Enterprise BYOK).
+  The MCP server runs a separate authorization server with a single `api:mcp`
+  scope and browser-based user consent. Only the first is described by the OpenAPI.
+
 summary:
-  types:
-  - http
+  types: [http, oauth2]
+  api_key_in: [header]
+  oauth2_flows: [authorizationCode, clientCredentials, refreshToken]
+  mfa_supported_for_console: unknown
+
 schemes:
-- name: bearerAuth
-  type: http
-  scheme: bearer
-  description: 'Pass your API key from the FullEnrich dashboard as a Bearer token in the Authorization
-    header: `Authorization: Bearer [example key]`.'
-  sources:
-  - openapi/fullenrich-openapi.yml
+  - name: BearerAuth
+    type: http
+    scheme: bearer
+    bearerFormat: string
+    description: >-
+      Workspace API key from the FullEnrich dashboard, sent as
+      `Authorization: Bearer <API_KEY>`. Applies to every REST operation. A missing
+      or invalid key returns 401 with an `Error` body. Keys can be regenerated from
+      the dashboard if compromised.
+    key_source: https://app.fullenrich.com/app/api
+    applies_to: all REST operations
+    sources:
+      - openapi/_original/fullenrich-openapi.yml
+    doubles_as:
+      purpose: webhook signing secret
+      detail: >-
+        The same API key is the HMAC-SHA1 secret used to sign outbound webhooks
+        (X-Signature-SHA1). See asyncapi/fullenrich-webhooks.yml. Rotating the API
+        key therefore also rotates webhook verification.
+
+  - name: FullEnrichOAuth
+    type: oauth2
+    description: >-
+      OAuth 2.0 authorization server on the application host. Discovered from
+      published RFC 8414 / OIDC metadata; not referenced by the public OpenAPI, so
+      it is not currently a documented path for third-party REST integration.
+    issuer: fullenrich
+    discovery:
+      - well-known/fullenrich-app-openid-configuration.json
+      - well-known/fullenrich-app-oauth-authorization-server.json
+    flows:
+      - flow: authorizationCode
+        authorizationUrl: https://app.fullenrich.com/oauth2/authorize
+        tokenUrl: https://app.fullenrich.com/oauth2/token
+        pkce: [S256]
+      - flow: clientCredentials
+        tokenUrl: https://app.fullenrich.com/oauth2/token
+      - flow: refreshToken
+        tokenUrl: https://app.fullenrich.com/oauth2/token
+    endpoints:
+      jwks_uri: https://app.fullenrich.com/oauth2/jwks
+      introspection: https://app.fullenrich.com/oauth2/introspect
+      revocation: https://app.fullenrich.com/oauth2/revoke
+    token_endpoint_auth_methods: [none, client_secret_basic, client_secret_post]
+    id_token_signing_alg: [HS256]
+    scope_count: 13
+    detail: scopes/fullenrich-scopes.yml
+    sources:
+      - https://app.fullenrich.com/.well-known/openid-configuration
+
+  - name: FullEnrichMCPOAuth
+    type: oauth2
+    description: >-
+      Separate authorization server protecting the remote MCP server. Uses dynamic
+      client registration and browser-based user consent — there is no static
+      client secret for an end user to copy into an MCP client.
+    issuer: https://mcp.fullenrich.com
+    discovery:
+      - well-known/fullenrich-mcp-oauth-authorization-server.json
+      - well-known/fullenrich-mcp-oauth-protected-resource.json
+    flows:
+      - flow: authorizationCode
+        authorizationUrl: https://mcp.fullenrich.com/authorize
+        tokenUrl: https://mcp.fullenrich.com/token
+        pkce: [S256]
+      - flow: refreshToken
+        tokenUrl: https://mcp.fullenrich.com/token
+    endpoints:
+      registration: https://mcp.fullenrich.com/register
+      revocation: https://mcp.fullenrich.com/revoke
+    dynamic_client_registration: true
+    protected_resource: https://mcp.fullenrich.com/mcp
+    scopes: [api:mcp]
+    bearer_methods_supported: [header]
+    sources:
+      - https://mcp.fullenrich.com/.well-known/oauth-authorization-server
+      - https://mcp.fullenrich.com/.well-known/oauth-protected-resource
+
+enterprise:
+  sso: Custom SSO / custom IdP available as an Enterprise add-on.
+  byok: Bring Your Own API Key (BYOK) offered on Enterprise plans.
+  google_sso: Available on every plan including the free trial.
+  source: https://fullenrich.com/pricing.md
+
+failure_modes:
+  - status: 401
+    meaning: Missing Authorization header, or an invalid/revoked API key.
+    body: '{ "code": "...", "message": "..." }'
+
+x-evidence:
+  - url: https://docs.fullenrich.com/api/v2/general/authentication.md
+    http_status: 200
+  - url: https://app.fullenrich.com/.well-known/openid-configuration
+    http_status: 200
+  - url: https://mcp.fullenrich.com/.well-known/oauth-authorization-server
+    http_status: 200
+  - url: https://mcp.fullenrich.com/mcp
+    http_status: 401
+    detail: WWW-Authenticate Bearer resource_metadata

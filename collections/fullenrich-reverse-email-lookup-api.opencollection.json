@@ -1,0 +1,58 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "FullEnrich Account Reverse Email Lookup API",
+    "version": "2.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Reverse Email Lookup",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get reverse email lookup results",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://app.fullenrich.com/api/v2/contact/reverse/email/bulk",
+            "params": [
+              {
+                "name": "enrichment_id",
+                "value": "",
+                "type": "query",
+                "description": "The enrichment_id returned when the reverse lookup was started."
+              }
+            ]
+          },
+          "docs": "Retrieve the result of a reverse email lookup by its enrichment_id."
+        },
+        {
+          "info": {
+            "name": "Start a bulk reverse email lookup",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://app.fullenrich.com/api/v2/contact/reverse/email/bulk",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Resolve a person and company from one or more email addresses. Returns an enrichment_id used to retrieve results."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,148 @@
+generated: '2026-08-14'
+method: searched
+status: published
+source: >-
+  https://help.fullenrich.com/en/articles/14190120-mcp-server (setup + endpoint),
+  https://github.com/FullEnrich/fullenrich-skills (server.json / mcp.json /
+  .mcp.json manifests + fullenrich-mcp-documentation.md tool table),
+  https://fullenrich.com/pricing.md, and a live probe of
+  https://mcp.fullenrich.com/mcp.
+description: >-
+  FullEnrich operates a first-party remote MCP server that exposes B2B contact
+  and company search, waterfall enrichment, and CSV/JSON export to MCP-capable
+  agents. Transport is Streamable HTTP; authentication is browser OAuth against
+  the FullEnrich account (no static client secret). There is no stdio package —
+  the only distribution is the hosted URL, plus an optional Claude plugin of
+  Agent Skills that layers workflow guidance on top of the same server.
+
+deployment:
+  mode: remote
+  endpoint: https://mcp.fullenrich.com/mcp
+  auth: oauth
+  verified: probed
+  note: >-
+    POST tools/list to the endpoint returned HTTP 401 with
+    `WWW-Authenticate: Bearer resource_metadata="https://mcp.fullenrich.com/.well-known/oauth-protected-resource"`,
+    which both confirms the endpoint is live and proves it is a spec-compliant
+    RFC 9728 protected resource. No stdio/npx package is published, so `install`
+    and `package` are intentionally absent rather than empty.
+
+server:
+  name: fullenrich
+  registry_name: io.github.FullEnrich/fullenrich
+  registry_version: 1.0.3
+  transport: streamable-http
+  url: https://mcp.fullenrich.com/mcp
+  documentation: mcp/fullenrich-mcp-documentation.md
+  help_article: https://help.fullenrich.com/en/articles/14190120-mcp-server
+  manifests:
+    server_json: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/server.json
+    mcp_json: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/mcp.json
+    claude_plugin: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/.claude-plugin/plugin.json
+    gemini_extension: https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/gemini-extension.json
+
+authorization:
+  model: OAuth 2.1 authorization code + PKCE, dynamic client registration
+  scopes: [api:mcp]
+  authorization_server: https://mcp.fullenrich.com
+  metadata:
+    oauth_authorization_server: well-known/fullenrich-mcp-oauth-authorization-server.json
+    oauth_protected_resource: well-known/fullenrich-mcp-oauth-protected-resource.json
+  endpoints:
+    authorization: https://mcp.fullenrich.com/authorize
+    token: https://mcp.fullenrich.com/token
+    registration: https://mcp.fullenrich.com/register
+    revocation: https://mcp.fullenrich.com/revoke
+  detail: scopes/fullenrich-scopes.yml
+
+tools_introspection:
+  live_tools_list: gated
+  probe:
+    url: https://mcp.fullenrich.com/mcp
+    method: 'POST {"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+    http_status: 401
+    body: unauthorized
+  note: >-
+    inputSchema for each tool requires an authenticated tools/list. The tool
+    names and descriptions below are transcribed verbatim from FullEnrich's own
+    published tool table (mcp/fullenrich-mcp-documentation.md), not guessed.
+    Real input contracts for the tools that are REST-backed are inherited from
+    the backing OpenAPI operation — see mcp/fullenrich-tool-crosswalk.yml.
+
+tool_count: 13
+tools:
+  - name: get_credits
+    category: account
+    description: Return the current credit balance before running paid actions.
+  - name: list_industries
+    category: reference
+    description: List valid industry codes and labels (use before filtering by industry).
+  - name: list_seniorities
+    category: reference
+    description: List valid seniority levels for people filters.
+  - name: list_functions_subfunctions
+    category: reference
+    description: List valid function and subfunction codes for people filters.
+  - name: search_people
+    category: search
+    description: Search for people with structured contact and company filters.
+  - name: search_companies
+    category: search
+    description: Search for companies with structured company filters.
+  - name: search_contact_by_email
+    category: reverse-lookup
+    description: Find a contact from an email address (reverse lookup).
+  - name: enrich_search_contact
+    category: enrichment
+    description: Enrich contacts matching search filters with verified emails and phones.
+  - name: enrich_bulk
+    category: enrichment
+    description: Enrich multiple known contacts in one batch flow.
+  - name: get_enrichment_results
+    category: enrichment
+    description: Poll status and fetch results for async or bulk enrichment.
+  - name: export_contacts
+    category: export
+    description: Export contact results to CSV.
+  - name: export_companies
+    category: export
+    description: Export company results to CSV.
+  - name: export_enrichment_results
+    category: export
+    description: Export enrichment job results to CSV or JSON.
+
+cost_semantics:
+  free_actions: [get_credits, search preview (first 10 results + total count), reference list_* tools]
+  paid_actions:
+    - action: export
+      cost: 0.25 credits per contact or company exported
+    - action: enrichment
+      cost: 1 credit per work email, 3 per personal email, 10 per mobile phone; nothing found is free
+  human_confirmation: >-
+    FullEnrich documents a preview -> show balance -> confirm -> execute -> report
+    pattern and states the agent should confirm with the user before any
+    credit-spending action.
+  detail: plans/fullenrich-plans-pricing.yml
+
+skills:
+  published: true
+  count: 9
+  repository: https://github.com/FullEnrich/fullenrich-skills
+  license: MIT
+  detail: skills/_index.yml
+  note: >-
+    FullEnrich deliberately splits the layers — MCP tool descriptions stay short
+    for client-side discovery, and workflow guardrails live in Agent Skills for
+    clients that consume them.
+
+x-evidence:
+  - url: https://mcp.fullenrich.com/mcp
+    method: POST tools/list
+    http_status: 401
+    detail: WWW-Authenticate Bearer resource_metadata (RFC 9728)
+  - url: https://mcp.fullenrich.com/.well-known/oauth-protected-resource
+    http_status: 200
+  - url: https://mcp.fullenrich.com/.well-known/oauth-authorization-server
+    http_status: 200
+  - url: https://help.fullenrich.com/en/articles/14190120-mcp-server
+    http_status: 200

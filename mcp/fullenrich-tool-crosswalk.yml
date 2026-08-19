@@ -1,0 +1,132 @@
+generated: '2026-08-14'
+method: derived
+source: >-
+  Derived by aligning FullEnrich's published 13-tool MCP list
+  (mcp/fullenrich-mcp-documentation.md, harvested verbatim from
+  github.com/FullEnrich/fullenrich-skills) with the live REST OpenAPI 3.1.0
+  harvested from https://mintcdn.com/fullenrich/QlQ00joQ41SH1_-N/api/v2/reference/openapi.yml
+  (10 operations, archived at openapi/_original/fullenrich-openapi.yml and split
+  one-per-resource under openapi/).
+purpose: >-
+  Bind each agent-facing MCP tool to the REST operation that backs it, so a bound
+  tool inherits a REAL inputSchema (that operation's requestBody/parameters in the
+  spec) instead of a guessed one. FullEnrich's MCP and REST surfaces are
+  overlapping but NOT identical: the MCP layer adds reference-vocabulary and
+  export tools that have no public REST operation.
+
+surfaces:
+  rest_openapi: openapi/
+  rest_openapi_original: openapi/_original/fullenrich-openapi.yml
+  rest_base_url: https://app.fullenrich.com/api/v2
+  graphql: null
+  mcp: https://mcp.fullenrich.com/mcp
+  gating:
+    rest: public spec, bearer API key at call time
+    mcp: >-
+      tools/list is OAuth-gated (HTTP 401 + RFC 9728 challenge), so tool names and
+      descriptions come from the provider's own published tool table and bindings
+      are mapped by name/semantics. Confidence is recorded honestly per row.
+
+crosswalk:
+  - tool: get_credits
+    category: account
+    rest: [getAccountCredits]
+    binding: rest
+    confidence: high
+  - tool: search_people
+    category: search
+    rest: [postPeopleSearch]
+    binding: rest
+    confidence: high
+  - tool: search_companies
+    category: search
+    rest: [postCompanySearch]
+    binding: rest
+    confidence: high
+  - tool: search_contact_by_email
+    category: reverse-lookup
+    rest: [postContactBulkReverseEmail, GetContactBulkReverseEmailByID]
+    binding: rest
+    confidence: high
+    note: >-
+      REST reverse lookup is asynchronous and bulk (POST returns an enrichment_id,
+      GET retrieves). The MCP tool collapses both legs into one synchronous-looking
+      call, so it fans out to two operations.
+  - tool: enrich_bulk
+    category: enrichment
+    rest: [postContactBulkEnrich]
+    binding: rest
+    confidence: high
+  - tool: get_enrichment_results
+    category: enrichment
+    rest: [GetContactBulkEnrichByID, GetContactBulkReverseEmailByID]
+    binding: rest
+    confidence: high
+    note: One tool polls both the enrichment and reverse-email result endpoints.
+  - tool: enrich_search_contact
+    category: enrichment
+    rest: [postPeopleSearch, postContactBulkEnrich]
+    binding: rest
+    confidence: medium
+    note: >-
+      Server-side composite — run a people search, then submit the matched
+      contacts to bulk enrichment. No single REST operation performs both.
+
+mcp_only:
+  - tool: list_industries
+    category: reference
+    reason: >-
+      Reference vocabulary for the `industries` / `current_company_industries`
+      filters. The REST spec constrains these fields but publishes no operation
+      that enumerates the valid codes; the enum list is human documentation only
+      (docs.fullenrich.com/api/v2/general/enums).
+  - tool: list_seniorities
+    category: reference
+    reason: >-
+      Same shape as list_industries — the seniority vocabulary used by
+      SearchPeopleRequest has no REST enumeration operation.
+  - tool: list_functions_subfunctions
+    category: reference
+    reason: >-
+      Function/subfunction vocabulary for people filters; no REST enumeration
+      operation exists.
+  - tool: export_contacts
+    category: export
+    reason: >-
+      CSV export is an MCP/app capability. The REST API returns JSON only and
+      publishes no export or download-link operation.
+  - tool: export_companies
+    category: export
+    reason: CSV export of company search results; no REST counterpart.
+  - tool: export_enrichment_results
+    category: export
+    reason: >-
+      CSV/JSON export of an enrichment job, including download links and result
+      metadata. REST exposes the results object but no export/download operation.
+
+rest_only:
+  - group: api key validation
+    ops: [checkKey]
+    reason: >-
+      GET /account/keys/verify has no MCP tool — the MCP session authenticates
+      with OAuth, not a bearer API key, so key validation is meaningless there.
+  - group: single-record identity resolution
+    ops: [postPeopleLookup, postCompanyLookup]
+    reason: >-
+      REST exposes deterministic lookup-by-identifier (professional network URL/ID,
+      domain) returning the single best match. The MCP surface routes this through
+      the broader search tools instead.
+
+coverage:
+  mcp_tools_named: 13
+  mcp_bound_to_rest: 7
+  mcp_only: 6
+  rest_operations_total: 10
+  rest_operations_with_mcp_tool: 7
+  rest_only: 3
+
+divergence_note: >-
+  Neither surface is a superset. MCP adds a reference-vocabulary layer and a CSV
+  export layer that REST does not publish; REST keeps API-key verification and
+  deterministic single-record lookup that MCP does not expose. An agent restricted
+  to one surface loses real capability either way.

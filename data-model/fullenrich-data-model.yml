@@ -1,0 +1,259 @@
+generated: '2026-08-14'
+method: derived
+source: >-
+  openapi/_original/fullenrich-openapi.yml — 38 component schemas, $ref edges and
+  id-reference fields. Field semantics enriched from
+  https://docs.fullenrich.com/api/v2/general/data-dictionary and /general/email-status.
+description: >-
+  FullEnrich's object graph has two roots: an asynchronous Enrichment job that owns
+  per-contact Records, and a synchronous Search/Lookup surface that returns Person
+  and Company directly. The two share the same Person/Company/Employment
+  vocabulary, which is what makes a search result enrichable without remapping.
+
+id_conventions:
+  enrichment_id:
+    type: string (uuid)
+    prefix: none
+    example_shape: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+    scope: Identifies one bulk job. Valid for 3 months, then unresolvable.
+  person_id:
+    type: string
+    field: Person.id / Profile.id
+  company_id:
+    type: string
+    field: Company.id / EmploymentCompany.id
+  external_key:
+    field: custom
+    detail: Caller-supplied string map (max 10 keys, 100 chars/value) echoed back unchanged — the join key back to a CRM.
+  natural_keys:
+    - domain (company)
+    - professional_network_url / professional_network_id (person and company)
+    - email (reverse lookup input)
+
+entities:
+  - name: Enrichment
+    schema: ResponseGetContactBulkEnrich
+    root: true
+    description: An asynchronous bulk contact-enrichment job.
+    fields: [id, name, status, data, cost]
+    lifecycle_states: [CREATED, IN_PROGRESS, CANCELED, CREDITS_INSUFFICIENT, FINISHED, RATE_LIMIT, UNKNOWN]
+
+  - name: ReverseEmailEnrichment
+    schema: ResponseGetContactBulkReverseEmail
+    root: true
+    description: An asynchronous bulk reverse-email-lookup job.
+    fields: [id, name, status, data, cost]
+
+  - name: Cost
+    schema: Cost
+    description: Credits consumed by a job.
+    fields: [credits]
+
+  - name: RecordEnrichment
+    schema: RecordEnrichment
+    description: One enriched contact inside an enrichment job.
+    fields: [input, custom, contact_info, profile]
+
+  - name: RecordReverseEmail
+    schema: RecordReverseEmail
+    description: One resolved identity inside a reverse-email job. Carries no contact_info — the email was the input.
+    fields: [input, custom, profile]
+
+  - name: ContactEnrichedInformation
+    schema: ContactEnrichedInformation
+    description: The found contact channels for one person, with best-match shortcuts.
+    fields: [most_probable_work_email, most_probable_personal_email, most_probable_phone, work_emails, personal_emails, phones]
+
+  - name: Email
+    schema: Email
+    description: A single email address with its verification status.
+    fields: [email, status]
+    enums:
+      status: [DELIVERABLE, HIGH_PROBABILITY, CATCH_ALL, INVALID, INVALID_DOMAIN]
+
+  - name: Phone
+    schema: Phone
+    description: A single phone number in E.164 with an ISO region code.
+    fields: [number, region]
+
+  - name: Person
+    schema: Person
+    root: true
+    description: A person profile — the shared entity across search, lookup and enrichment.
+    fields: [id, full_name, first_name, last_name, headline, description, location, social_profiles, educations, languages, skills, employment]
+
+  - name: Company
+    schema: Company
+    root: true
+    description: A company profile.
+    fields: [id, name, domain, website, description, year_founded, headcount, headcount_range, company_type, locations, social_profiles, specialties]
+
+  - name: Employment
+    schema: Employment
+    description: One position a person has held.
+    fields: [title, seniority, job_functions, description, company, is_current, start_at, end_at]
+
+  - name: EmploymentCompany
+    schema: EmploymentCompany
+    description: The company side of an employment record — a fuller company shape than Company in some fields (adds industry, specialties).
+    fields: [id, name, domain, website, description, year_founded, headcount, headcount_range, company_type, specialties, locations, industry]
+
+  - name: PersonEducation
+    schema: PersonEducation
+    fields: [school_name, degree, start_at, end_at]
+
+  - name: PersonLanguage
+    schema: PersonLanguage
+    fields: [language, proficiency]
+
+  - name: CompanyAddress
+    schema: CompanyAddress
+    fields: [line1, line2, city, region, country, country_code]
+
+  - name: PersonSocialProfile
+    schema: PersonSocialProfile
+    fields: [professional_network]
+
+  - name: CompanySocialProfile
+    schema: CompanySocialProfile
+    fields: [professional_network]
+
+  - name: Credits
+    schema: Credits
+    root: true
+    description: Workspace credit balance.
+    fields: [balance]
+
+  - name: Error
+    schema: Error
+    fields: [code, message]
+
+relationships:
+  - from: Enrichment
+    to: RecordEnrichment
+    kind: has_many
+    via: data
+  - from: Enrichment
+    to: Cost
+    kind: has_one
+    via: cost
+  - from: ReverseEmailEnrichment
+    to: RecordReverseEmail
+    kind: has_many
+    via: data
+  - from: ReverseEmailEnrichment
+    to: Cost
+    kind: has_one
+    via: cost
+  - from: RecordEnrichment
+    to: ContactEnrichmentInput
+    kind: has_one
+    via: input
+  - from: RecordEnrichment
+    to: ContactEnrichedInformation
+    kind: has_one
+    via: contact_info
+  - from: RecordEnrichment
+    to: Person
+    kind: has_one
+    via: profile
+  - from: RecordReverseEmail
+    to: ContactReverseEmailInput
+    kind: has_one
+    via: input
+  - from: RecordReverseEmail
+    to: Person
+    kind: has_one
+    via: profile
+  - from: ContactEnrichedInformation
+    to: Email
+    kind: has_many
+    via: work_emails
+  - from: ContactEnrichedInformation
+    to: Email
+    kind: has_many
+    via: personal_emails
+  - from: ContactEnrichedInformation
+    to: Phone
+    kind: has_many
+    via: phones
+  - from: ContactEnrichedInformation
+    to: Email
+    kind: has_one
+    via: most_probable_work_email
+  - from: ContactEnrichedInformation
+    to: Email
+    kind: has_one
+    via: most_probable_personal_email
+  - from: ContactEnrichedInformation
+    to: Phone
+    kind: has_one
+    via: most_probable_phone
+  - from: Person
+    to: Employment
+    kind: has_one
+    via: employment.current
+  - from: Person
+    to: Employment
+    kind: has_many
+    via: employment.all
+  - from: Person
+    to: PersonEducation
+    kind: has_many
+    via: educations
+  - from: Person
+    to: PersonLanguage
+    kind: has_many
+    via: languages
+  - from: Person
+    to: PersonSocialProfile
+    kind: has_one
+    via: social_profiles
+  - from: Employment
+    to: EmploymentCompany
+    kind: belongs_to
+    via: company
+  - from: Company
+    to: CompanyAddress
+    kind: has_many
+    via: locations
+  - from: Company
+    to: CompanySocialProfile
+    kind: has_one
+    via: social_profiles
+  - from: EmploymentCompany
+    to: CompanyAddress
+    kind: has_many
+    via: locations
+  - from: SearchPeopleResponse
+    to: Person
+    kind: has_many
+    via: people
+  - from: SearchCompanyResponse
+    to: Company
+    kind: has_many
+    via: companies
+  - from: LookUpPeopleResponse
+    to: Person
+    kind: has_many
+    via: people
+  - from: LookUpCompanyResponse
+    to: Company
+    kind: has_many
+    via: companies
+
+observations:
+  - >-
+    Person and Company are reachable from both the async enrichment surface (as
+    `profile`) and the sync search/lookup surface, using the same schema. That is
+    the strongest modeling decision in the API — a search hit can be handed
+    straight to enrichment without field remapping.
+  - >-
+    Company and EmploymentCompany are near-duplicate shapes; EmploymentCompany
+    carries `industry` and `specialties` while Company carries `specialties` but no
+    `industry`. A consumer normalizing companies across both surfaces has to
+    reconcile them.
+  - >-
+    There is no cross-entity foreign key between an Enrichment and a Person beyond
+    embedding — results are returned nested, never referenced by id, so there is no
+    "fetch this person later by id" operation.

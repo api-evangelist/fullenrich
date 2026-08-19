@@ -1,0 +1,1721 @@
+openapi: 3.1.0
+info:
+  title: FullEnrich Search API
+  description: Synchronous search for people and companies across 800M people and 50M companies using
+    structured filters. FullEnrich API enables you to enrich B2B contacts with emails and phone numbers
+    using data from 20+ providers.  We are GDPR and CCPA compliant.
+  version: 2.0.0
+  contact:
+    name: FullEnrich Support
+    url: https://docs.fullenrich.com
+  termsOfService: https://fullenrich.com/tos
+servers:
+- url: https://app.fullenrich.com/api/v2
+security:
+- BearerAuth: []
+tags:
+- name: Search
+  description: Synchronous search for people and companies across 800M people and 50M companies using
+    structured filters.
+paths:
+  /people/search:
+    post:
+      summary: Search people
+      description: Search for people based on various filters. Multiple filters within the same field
+        are combined with AND logic.
+      operationId: postPeopleSearch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchPeopleRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/SearchPeopleResponse'
+                - $ref: '#/components/schemas/Metadata'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                AuthorizationHeaderNotSet:
+                  value:
+                    code: error.authorization.not_set
+                    message: Authorization headers not set
+                AuthorizationHeaderNotAnBearer:
+                  value:
+                    code: error.authorization.not_bearer
+                    message: Authorization headers do not have prefix 'bearer'
+                UnknownApiKey:
+                  value:
+                    code: error.api.key
+                    message: Unknown api key
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                RateLimitExceeded:
+                  value:
+                    code: error.rate.limit
+                    message: Too many requests. Try again in 1m
+      security:
+      - BearerAuth: []
+      tags:
+      - Search
+  /company/search:
+    post:
+      summary: Search company
+      description: Search for companies based on various filters. Multiple filters within the same field
+        are combined with AND logic.
+      operationId: postCompanySearch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchCompanyRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/SearchCompanyResponse'
+                - $ref: '#/components/schemas/Metadata'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                AuthorizationHeaderNotSet:
+                  value:
+                    code: error.authorization.not_set
+                    message: Authorization headers not set
+                AuthorizationHeaderNotAnBearer:
+                  value:
+                    code: error.authorization.not_bearer
+                    message: Authorization headers do not have prefix 'bearer'
+                UnknownApiKey:
+                  value:
+                    code: error.api.key
+                    message: Unknown api key
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                RateLimitExceeded:
+                  value:
+                    code: error.rate.limit
+                    message: Too many requests. Try again in 1m
+      security:
+      - BearerAuth: []
+      tags:
+      - Search
+components:
+  schemas:
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique company identifier
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        name:
+          type: string
+          description: Company name
+          example: Anthropic
+        domain:
+          type: string
+          description: Company domain
+          example: anthropic.com
+        website:
+          type: string
+          description: Company website URL as declared by the company. May differ from `domain` (can include
+            a subdomain, a path or tracking parameters). Omitted when not available.
+          example: https://www.anthropic.com
+        description:
+          type: string
+          description: Company description
+          example: AI safety and research company building reliable, interpretable, and steerable AI systems.
+        year_founded:
+          type: integer
+          description: Year the company was founded. Returns 0 when unknown.
+          example: 2021
+        headcount:
+          type: integer
+          description: Exact number of employees. May return 0 even when headcount_range is available.
+          example: 2610
+        headcount_range:
+          type: string
+          description: Employee count range (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000',
+            '5001-10000', '10001+')
+          example: 1001-5000
+        company_type:
+          type: string
+          description: Type of company (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed',
+            'Partnership', 'Educational', 'Government Agency')
+          example: Privately Held
+        locations:
+          type: object
+          description: Company location information
+          properties:
+            headquarters:
+              type: object
+              description: Main headquarters address with structured location fields. Can be an empty
+                object when no headquarters data is available.
+              allOf:
+              - $ref: '#/components/schemas/CompanyAddress'
+            offices:
+              type: array
+              description: Additional office locations. Only contains raw address lines (line1, line2)
+                without structured city/region/country fields. Can be null or an empty array.
+              nullable: true
+              items:
+                $ref: '#/components/schemas/OfficeAddress'
+        social_profiles:
+          type: object
+          description: Company's social media profiles
+          allOf:
+          - $ref: '#/components/schemas/CompanySocialProfile'
+        specialties:
+          type: array
+          description: Specialties associated with the company
+          items:
+            type: string
+          example:
+          - artificial intelligence
+          - machine learning
+          - AI safety
+        industry:
+          type: object
+          description: Company industry information
+          properties:
+            main_industry:
+              type: string
+              description: Primary industry category (e.g., 'Software Development', 'Computer Hardware
+                Manufacturing', 'Financial Services', 'Healthcare', 'Retail')
+              example: Software Development
+        logo_url:
+          type: string
+          description: URL of the company logo hosted by FullEnrich, built from the company's professional
+            network handle. Empty when the handle is unknown.
+          example: https://app.fullenrich.com/logo/company/handle/anthropic
+    CompanyAddress:
+      type: object
+      description: Structured headquarters address with parsed location fields
+      properties:
+        line1:
+          type: string
+          description: Address line 1 (street address)
+          example: 548 Market St
+        line2:
+          type: string
+          description: Address line 2 (full location string including city, region, postal code, and country
+            code)
+          example: San Francisco, CA 94105, US
+        city:
+          type: string
+          description: City name
+          example: San Francisco
+        region:
+          type: string
+          description: State or region
+          example: California
+        country:
+          type: string
+          description: Country name
+          example: United States
+        country_code:
+          type: string
+          description: ISO country code
+          example: US
+    CompanySocialProfile:
+      type: object
+      properties:
+        professional_network:
+          type: object
+          description: Professional network profile information
+          properties:
+            id:
+              type: integer
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/company/anthropic
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: anthropic
+            connection_count:
+              type: integer
+              description: Number of professional network followers
+              example: 125000
+    Employment:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Job title or position
+          example: Senior Software Engineer
+        seniority:
+          type: string
+          description: Seniority level of the person in the company
+          example: Senior
+        job_functions:
+          type: array
+          description: Job functions of the person in the company
+          items:
+            type: object
+            properties:
+              function:
+                type: string
+                description: Job function
+                example: Not Employed
+              sub_function:
+                type: string
+                description: Sub function of the job function
+                example: Freelancer
+        description:
+          type: string
+          description: Description of the role and responsibilities. Not always present.
+          example: Leading the backend team and designing microservices architecture.
+        company:
+          type: object
+          description: Company information
+          allOf:
+          - $ref: '#/components/schemas/EmploymentCompany'
+        is_current:
+          type: boolean
+          description: Whether this is the current employment
+          example: true
+        start_at:
+          type: string
+          format: date-time
+          description: Employment start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2022-03-15T00:00:00Z'
+        end_at:
+          type: string
+          format: date-time
+          description: Employment end date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ).
+            This field is not returned for current employment (when is_current is true).
+          example: '2024-06-30T00:00:00Z'
+    EmploymentCompany:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique company identifier
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        name:
+          type: string
+          description: Company name
+          example: Anthropic
+        domain:
+          type: string
+          description: Company domain
+          example: anthropic.com
+        website:
+          type: string
+          description: Company website URL as declared by the company. May differ from `domain` (can include
+            a subdomain, a path or tracking parameters). Omitted when not available.
+          example: https://www.anthropic.com
+        description:
+          type: string
+          description: Company description
+          example: AI safety and research company
+        year_founded:
+          type: integer
+          description: Year the company was founded. Returns 0 when unknown.
+          example: 2021
+        headcount:
+          type: integer
+          description: Exact number of employees. May return 0 even when headcount_range is available.
+          example: 2610
+        headcount_range:
+          type: string
+          description: Employee count range (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000',
+            '5001-10000', '10001+')
+          example: 1001-5000
+        company_type:
+          type: string
+          description: Type of company (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed',
+            'Partnership', 'Educational', 'Government Agency')
+          example: Privately Held
+        specialties:
+          type: array
+          description: Specialties associated with the company
+          items:
+            type: string
+          example:
+          - Data Enrichment
+          - B2B Data
+        locations:
+          type: object
+          description: Company location information
+          properties:
+            headquarters:
+              type: object
+              description: Main headquarters address with structured location fields. Can be an empty
+                object when no headquarters data is available.
+              allOf:
+              - $ref: '#/components/schemas/CompanyAddress'
+            offices:
+              type: array
+              description: Additional office locations. Only contains raw address lines (line1, line2)
+                without structured city/region/country fields. Can be null or an empty array.
+              nullable: true
+              items:
+                $ref: '#/components/schemas/OfficeAddress'
+        industry:
+          type: object
+          description: Company industry information
+          properties:
+            main_industry:
+              type: string
+              description: Primary industry category (e.g., 'Software Development', 'Computer Hardware
+                Manufacturing', 'Financial Services', 'Healthcare')
+              example: Software Development
+        social_profiles:
+          type: object
+          description: Company's social media profiles
+          allOf:
+          - $ref: '#/components/schemas/CompanySocialProfile'
+        logo_url:
+          type: string
+          description: URL of the company logo hosted by FullEnrich, built from the company's professional
+            network handle. Empty when the handle is unknown.
+          example: https://app.fullenrich.com/logo/company/handle/anthropic
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - code
+      - message
+    Metadata:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Total number of results matching the search criteria
+              example: 20523
+            credits:
+              type: number
+              format: double
+              description: Total number of credits consumed
+              example: 22.5
+            offset:
+              type: integer
+              description: Number of results skipped (for pagination)
+              example: 0
+            search_after:
+              type: string
+              description: The cursor value returned by the previous page. Use this to paginate through
+                the results.
+              example: WzE1LjUzNDU2MywiYjQ5MDBiYmQtOTg5MS01Mzk1LWIyODUtOWEyOGNiZThjOTM3Il0=
+    OfficeAddress:
+      type: object
+      description: Office address. Unlike headquarters, office addresses only contain raw address lines
+        without parsed location fields.
+      properties:
+        line1:
+          type: string
+          description: Street address
+          example: 111 8th Ave
+        line2:
+          type: string
+          description: Full location string (city, region, postal code, country code)
+          example: New York, NY 10011, US
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique person identifier
+          example: 746e4816-19c8-54d8-b558-65a5a52cc85c
+        full_name:
+          type: string
+          description: Person's full name
+          example: Enzo Romera
+        first_name:
+          type: string
+          description: Person's first name
+          example: Enzo
+        last_name:
+          type: string
+          description: Person's last name
+          example: Romera
+        headline:
+          type: string
+          description: Short professional tagline written by the person on their professional network
+            profile
+          example: Marketing Strategist | 10+ Years in Strategy, Account Management & Activation | Consulting
+            Expert
+        description:
+          type: string
+          description: Free-text summary written by the person in the about section of their professional
+            network profile. Omitted when not available.
+          example: Marketing strategist with 10+ years helping B2B companies build demand generation engines.
+            I work with go-to-market teams on positioning, account-based campaigns and channel activation.
+        location:
+          type: object
+          description: Person's location information
+          properties:
+            country:
+              type: string
+              description: Country name
+              example: United States
+            country_code:
+              type: string
+              description: ISO country code
+              example: US
+            city:
+              type: string
+              description: City name
+              example: San Francisco
+            region:
+              type: string
+              description: Region or state
+              example: California
+        social_profiles:
+          type: object
+          description: Person's social media profiles
+          allOf:
+          - $ref: '#/components/schemas/PersonSocialProfile'
+        educations:
+          type: array
+          description: Person's education history
+          items:
+            $ref: '#/components/schemas/PersonEducation'
+        languages:
+          type: array
+          description: Languages spoken by the person
+          items:
+            $ref: '#/components/schemas/PersonLanguage'
+        skills:
+          type: array
+          description: Person's professional skills
+          items:
+            type: string
+          example:
+          - JavaScript
+          - Project Management
+          - Python
+        employment:
+          type: object
+          description: Person's employment history
+          properties:
+            current:
+              type: object
+              description: Current employment information. If the person is in their current position,
+                the end_at field will not be returned.
+              allOf:
+              - $ref: '#/components/schemas/Employment'
+            all:
+              type: array
+              description: All employment history (current and past)
+              items:
+                $ref: '#/components/schemas/Employment'
+    PersonEducation:
+      type: object
+      properties:
+        school_name:
+          type: string
+          description: Name of the educational institution
+          example: Stanford University
+        degree:
+          type: string
+          description: Degree or qualification obtained
+          example: Bachelor of Science in Computer Science
+        start_at:
+          type: string
+          format: date-time
+          description: Start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2015-09-01T00:00:00Z'
+        end_at:
+          type: string
+          format: date-time
+          description: End date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2019-06-01T00:00:00Z'
+    PersonLanguage:
+      type: object
+      properties:
+        language:
+          type: string
+          description: Language name
+          example: French
+        proficiency:
+          type: string
+          description: Proficiency level in the language (e.g., 'NATIVE_OR_BILINGUAL', 'FULL_PROFESSIONAL',
+            'PROFESSIONAL_WORKING', 'LIMITED_WORKING', 'ELEMENTARY')
+          example: NATIVE_OR_BILINGUAL
+    PersonSocialProfile:
+      type: object
+      properties:
+        professional_network:
+          type: object
+          description: Professional network profile information
+          properties:
+            id:
+              type: integer
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/in/john-doe
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: john-doe
+            connection_count:
+              type: integer
+              description: Number of professional network connections
+              example: 500
+    SearchCompanyRequest:
+      type: object
+      properties:
+        offset:
+          type: integer
+          description: Number of companies to skip (use this for pagination). Maximum value is 10,000.
+            To paginate beyond 10,000 results, use search_after instead.
+          example: 20
+        limit:
+          type: integer
+          description: 'Number of companies to return (default: 10, max: 100)'
+          example: 20
+        search_after:
+          type: string
+          description: Cursor-based pagination. Pass the search_after value from the previous response
+            to get the next page. Works at any point in the result set, but is required to access results
+            beyond the 10,000 offset limit. The search_after token does not have any expiration date.
+            However, when the database is updated (every month), if the position of a company changes,
+            the same search_after token might display different results.
+          example: WzE1LjUzNDU2MywiYjQ5MDBiYmQtOTg5MS01Mzk1LWIyODUtOWEyOGNiZThjOTM3Il0=
+        names:
+          type: array
+          description: Filter by company names. Use exact_match for precise company name matching.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Microsoft
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: Microsoft
+            exact_match: true
+            exclude: false
+        domains:
+          type: array
+          description: Filter by company domains (e.g., 'google.com', 'microsoft.com'). Exact match recommended.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: microsoft.com
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: microsoft.com
+            exact_match: true
+            exclude: false
+        professional_network_ids:
+          type: array
+          description: Filter by professional network IDs.
+          items:
+            type: object
+            properties:
+              value:
+                type: integer
+                description: The integer value to filter by
+                example: 1234
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the exact term must appear within the value, but can still be
+                  part of a longer string. When false (default), matching is flexible and tolerates slight
+                  variations such as missing or extra words. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: 1234
+            exact_match: true
+            exclude: false
+        professional_network_urls:
+          type: array
+          description: Filter by professional network URLs.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: https://www.linkedin.com/company/fullenrich
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: https://www.linkedin.com/company/fullenrich
+            exact_match: true
+            exclude: false
+        keywords:
+          type: array
+          description: Filter by description of company
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: innovative and practical products
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: innovative and practical products
+            exact_match: false
+            exclude: false
+        specialties:
+          type: array
+          description: Filter by specialties of company
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: AI safety
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: AI safety
+            exact_match: false
+            exclude: false
+        industries:
+          type: array
+          description: Filter by company industries (e.g., 'Software Development', 'Computer Hardware
+            Manufacturing', 'Housing and Community Development', 'Warehousing', 'Financial Services').
+            See [Industries](/api/v2/general/enums#company-industry) for the full list.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Software Development
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: Software Development
+            exact_match: false
+            exclude: false
+          - value: Computer Hardware Manufacturing
+            exact_match: false
+            exclude: false
+        types:
+          type: array
+          description: Filter by company types (e.g., 'Public Company', 'Privately Held', 'Nonprofit',
+            'Self-Employed', 'Partnership', 'Educational', 'Government Agency'). See [Company Types](/api/v2/general/enums#company-type)
+            for the full list.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Public Company
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: Public Company
+            exact_match: true
+            exclude: false
+        headquarters_locations:
+          type: array
+          description: Filter by headquarters locations (city names, regions, or countries)
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: San Francisco
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: San Francisco
+            exact_match: false
+            exclude: false
+        founded_years:
+          type: array
+          description: Filter by founding years. Useful for targeting startups (recent years) or established
+            companies.
+          items:
+            type: object
+            properties:
+              min:
+                type: integer
+                description: Minimum founding year (inclusive)
+                example: 2010
+              max:
+                type: integer
+                description: Maximum founding year (inclusive)
+                example: 2024
+              exclude:
+                type: boolean
+                description: If true, excludes companies founded in this range
+                example: false
+          example:
+          - min: 2015
+            max: 2024
+            exclude: false
+        headcounts:
+          type: array
+          description: 'Filter by company headcounts (number of employees). Use ranges to target specific
+            company sizes (e.g., startups: 1-50, mid-size: 50-500, enterprise: 1000+).'
+          items:
+            type: object
+            properties:
+              min:
+                type: integer
+                description: Minimum number of employees (inclusive)
+                example: 100
+              max:
+                type: integer
+                description: Maximum number of employees (inclusive)
+                example: 1000
+              exclude:
+                type: boolean
+                description: If true, excludes companies in this range
+                example: false
+          example:
+          - min: 100
+            max: 500
+            exclude: false
+        company_ids:
+          type: array
+          description: Filter by specific company IDs
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+    SearchCompanyResponse:
+      type: object
+      properties:
+        companies:
+          type: array
+          description: Array of companies matching the search criteria. Returns empty array if no results
+            found.
+          items:
+            $ref: '#/components/schemas/Company'
+    SearchPeopleRequest:
+      type: object
+      properties:
+        offset:
+          type: integer
+          description: Number of people to skip (use this for pagination). Maximum value is 10,000. To
+            paginate beyond 10,000 results, use search_after instead.
+          example: 0
+        limit:
+          type: integer
+          description: 'Number of people to return (default: 10, max: 100)'
+          example: 20
+        search_after:
+          type: string
+          description: Cursor-based pagination. Pass the search_after value from the previous response
+            to get the next page. Works at any point in the result set, but is required to access results
+            beyond the 10,000 offset limit. The search_after token does not have any expiration date.
+            However, when the database is updated (every month), if the position of a contact changes,
+            the same search_after token might display different results.
+          example: WzE1LjUzNDU2MywiYjQ5MDBiYmQtOTg5MS01Mzk1LWIyODUtOWEyOGNiZThjOTM3Il0=
+        current_company_names:
+          type: array
+          description: Filter by current company names. Use exact_match for precise company name matching.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Anthropic
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: Anthropic
+            exact_match: true
+            exclude: false
+          - value: OpenAI
+            exact_match: true
+            exclude: false
+        current_company_domains:
+          type: array
+          description: Filter by current company domains (e.g., 'google.com', 'microsoft.com'). Exact
+            match recommended for domains.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: google.com
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: google.com
+            exact_match: true
+            exclude: false
+        current_company_professional_network_ids:
+          type: array
+          description: Filter by current company professional network IDs.
+          items:
+            type: object
+            properties:
+              value:
+                type: integer
+                description: The integer value to filter by
+                example: 1234
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the exact term must appear within the value, but can still be
+                  part of a longer string. When false (default), matching is flexible and tolerates slight
+                  variations such as missing or extra words. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: 1234
+            exact_match: true
+            exclude: false
+        current_company_professional_network_urls:
+          type: array
+          description: Filter by current company professional network URLs.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: https://www.linkedin.com/company/fullenrich
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: https://www.linkedin.com/company/fullenrich
+            exact_match: true
+            exclude: false
+        current_company_specialties:
+          type: array
+          description: Filter by current company specialties.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: artificial intelligence
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: artificial intelligence
+            exact_match: true
+            exclude: false
+        current_company_industries:
+          type: array
+          description: Filter by company industries (e.g., 'Software Development', 'Computer Hardware
+            Manufacturing', 'Housing and Community Development', 'Warehousing'). See [Industries](/api/v2/general/enums#company-industry)
+            for the full list.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Software Development
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: Software Development
+            exact_match: false
+            exclude: false
+          - value: Computer Hardware Manufacturing
+            exact_match: false
+            exclude: false
+        past_company_names:
+          type: array
+          description: Filter by past company names. Useful for finding people with specific work history.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Meta
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: Meta
+            exact_match: true
+            exclude: false
+        past_company_domains:
+          type: array
+          description: Filter by past company domains
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: facebook.com
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: facebook.com
+            exact_match: true
+            exclude: false
+        current_company_types:
+          type: array
+          description: Filter by company types (e.g., 'Public Company', 'Privately Held', 'Nonprofit',
+            'Self-Employed', 'Partnership', 'Educational', 'Government Agency'). See [Company Types](/api/v2/general/enums#company-type)
+            for the full list.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Public Company
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: Public Company
+            exact_match: true
+            exclude: false
+        current_company_headquarters:
+          type: array
+          description: Filter by company headquarters locations (city names, regions, or countries)
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: San Francisco
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: San Francisco
+            exact_match: false
+            exclude: false
+          - value: New York
+            exact_match: false
+            exclude: false
+        current_company_headcounts:
+          type: array
+          description: Filter by company size (number of employees). Use ranges to target specific company
+            sizes.
+          items:
+            type: object
+            properties:
+              min:
+                type: integer
+                description: Minimum number of employees (inclusive)
+                example: 50
+              max:
+                type: integer
+                description: Maximum number of employees (inclusive)
+                example: 500
+              exclude:
+                type: boolean
+                description: If true, excludes companies in this range
+                example: false
+          example:
+          - min: 50
+            max: 200
+            exclude: false
+          - min: 1000
+            max: 5000
+            exclude: false
+        current_company_founded_years:
+          type: array
+          description: Filter by company founding year. Useful for targeting startups or established companies.
+          items:
+            type: object
+            properties:
+              min:
+                type: integer
+                description: Minimum founding year (inclusive)
+                example: 2015
+              max:
+                type: integer
+                description: Maximum founding year (inclusive)
+                example: 2024
+              exclude:
+                type: boolean
+                description: If true, excludes companies founded in this range
+                example: false
+          example:
+          - min: 2020
+            max: 2024
+            exclude: false
+        current_company_ids:
+          type: array
+          description: Filter by specific company IDs
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+        person_ids:
+          type: array
+          description: Filter by specific person IDs
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: 746e4816-19c8-54d8-b558-65a5a52cc85c
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+        person_names:
+          type: array
+          description: Filter by person names (first name, last name, or full name)
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: John Smith
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: John Smith
+            exact_match: false
+            exclude: false
+        person_professional_network_ids:
+          type: array
+          description: Filter by person professional network IDs.
+          items:
+            type: object
+            properties:
+              value:
+                type: integer
+                description: The integer value to filter by
+                example: 1234
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the exact term must appear within the value, but can still be
+                  part of a longer string. When false (default), matching is flexible and tolerates slight
+                  variations such as missing or extra words. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: 1234
+            exact_match: true
+            exclude: false
+        person_professional_network_urls:
+          type: array
+          description: Filter by person professional network URLs.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: https://www.linkedin.com/in/john-doe
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: true
+          example:
+          - value: https://www.linkedin.com/in/john-doe
+            exact_match: true
+            exclude: false
+        person_locations:
+          type: array
+          description: Filter by person locations (city, region, or country)
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: San Francisco
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: San Francisco
+            exact_match: false
+            exclude: false
+          - value: California
+            exact_match: false
+            exclude: false
+        person_languages:
+          type: array
+          description: Filter by languages spoken by the person
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: English
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: English
+            exact_match: false
+            exclude: false
+          - value: French
+            exact_match: false
+            exclude: false
+        person_skills:
+          type: array
+          description: Filter by skills (e.g., 'JavaScript', 'Python', 'Project Management')
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: JavaScript
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: JavaScript
+            exact_match: false
+            exclude: false
+          - value: Python
+            exact_match: false
+            exclude: false
+          - value: Project Management
+            exact_match: false
+            exclude: false
+        current_position_seniority_level:
+          type: array
+          description: Filter by person seniority levels (e.g., 'Owner', 'Founder', 'C-level', 'Partner',
+            'VP', 'Head', 'Director', 'Senior', 'Manager'). See [Seniority Levels](/api/v2/general/enums#seniority)
+            for the full list.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Director
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: Director
+            exact_match: false
+            exclude: false
+          - value: VP
+            exact_match: false
+            exclude: false
+        current_position_job_functions:
+          type: array
+          description: Filter by current job functions (e.g., 'Administrative', 'Agriculture & Environment',
+            'Construction & Trades', ...). See [Functions & Subfunctions](/api/v2/general/enums#functions-and-subfunctions)
+            for the full list.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Software Development
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: Software Development
+            exact_match: false
+            exclude: false
+        current_position_sub_functions:
+          type: array
+          description: Filter by current sub functions (e.g., 'Data Entry', 'Agriculture/Landscaping',
+            'Carpenter'). See [Functions & Subfunctions](/api/v2/general/enums#functions-and-subfunctions)
+            for the full list.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Freelancer
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: Freelancer
+            exact_match: false
+            exclude: false
+        current_position_titles:
+          type: array
+          description: Filter by current job titles (e.g., 'Software Engineer', 'Product Manager', 'CEO')
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Chief Technology Officer
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: Chief Technology Officer
+            exact_match: false
+            exclude: false
+          - value: VP of Engineering
+            exact_match: false
+            exclude: false
+        past_position_titles:
+          type: array
+          description: Filter by past job titles. Useful for finding people who held specific roles.
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Software Engineer
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: Software Engineer
+            exact_match: false
+            exclude: false
+        current_position_years_in:
+          type: array
+          description: Filter by years spent in current position. Useful for targeting people new in role
+            or experienced.
+          items:
+            type: object
+            properties:
+              min:
+                type: integer
+                description: Minimum years in current position (inclusive)
+                example: 0
+              max:
+                type: integer
+                description: Maximum years in current position (inclusive)
+                example: 2
+              exclude:
+                type: boolean
+                description: If true, excludes people in this range
+                example: false
+          example:
+          - min: 0
+            max: 1
+            exclude: false
+        current_company_years_at:
+          type: array
+          description: Filter by years at current company (tenure). Useful for targeting new hires or
+            long-term employees.
+          items:
+            type: object
+            properties:
+              min:
+                type: integer
+                description: Minimum years at current company (inclusive)
+                example: 1
+              max:
+                type: integer
+                description: Maximum years at current company (inclusive)
+                example: 5
+              exclude:
+                type: boolean
+                description: If true, excludes people in this range
+                example: false
+          example:
+          - min: 2
+            max: 5
+            exclude: false
+        person_universities:
+          type: array
+          description: Filter by universities attended (e.g., 'Stanford University', 'MIT', 'Harvard')
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The string value to filter by
+                example: Stanford University
+              exclude:
+                type: boolean
+                description: If true, excludes results matching this value. If false or omitted (default),
+                  includes only matching results.
+                example: false
+              exact_match:
+                type: boolean
+                description: When true, the value must match exactly as stored (case-insensitive), with
+                  no tolerance for variations. When false (default), the API tolerates minor differences
+                  such as missing words, extra words, or slight reordering. Matching is never case-sensitive.
+                example: false
+          example:
+          - value: Stanford University
+            exact_match: false
+            exclude: false
+          - value: MIT
+            exact_match: false
+            exclude: false
+        current_company_days_since_last_job_change:
+          type: array
+          description: Filter by days since last job change. Useful for finding people who recently changed
+            jobs.
+          items:
+            type: object
+            properties:
+              min:
+                type: integer
+                description: Minimum days since last job change (inclusive)
+                example: 0
+              max:
+                type: integer
+                description: Maximum days since last job change (inclusive)
+                example: 90
+              exclude:
+                type: boolean
+                description: If true, excludes people in this range
+                example: false
+          example:
+          - min: 0
+            max: 90
+            exclude: false
+    SearchPeopleResponse:
+      type: object
+      properties:
+        people:
+          type: array
+          description: Array of people matching the search criteria. Returns empty array if no results
+            found.
+          items:
+            $ref: '#/components/schemas/Person'
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: string

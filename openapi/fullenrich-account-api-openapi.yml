@@ -1,86 +1,126 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: FullEnrich Account API
-  description: FullEnrich finds verified B2B business emails and mobile phone numbers by running a waterfall across 15+ data vendors. Submit contacts by first name, last name and company (domain or company name) — optionally with a LinkedIn URL — for bulk enrichment, then retrieve results by polling or via webhook. Credits are only consumed when data is found.
-  termsOfService: https://fullenrich.com/terms
+  description: Workspace credit balance and API key validity checks. FullEnrich API enables you to enrich
+    B2B contacts with emails and phone numbers using data from 20+ providers.  We are GDPR and CCPA compliant.
+  version: 2.0.0
   contact:
     name: FullEnrich Support
     url: https://docs.fullenrich.com
-  version: '2.0'
+  termsOfService: https://fullenrich.com/tos
 servers:
 - url: https://app.fullenrich.com/api/v2
-  description: FullEnrich production API
 security:
-- bearerAuth: []
+- BearerAuth: []
 tags:
 - name: Account
-  description: Workspace credit balance and API key checks.
+  description: Workspace credit balance and API key validity checks.
 paths:
-  /account/credits:
-    get:
-      operationId: getAccountCredits
-      tags:
-      - Account
-      summary: Get workspace credit balance
-      description: Returns the current balance of credits available in your workspace.
-      responses:
-        '200':
-          description: Current credit balance.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountCredits'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
   /account/keys/verify:
     get:
-      operationId: verifyApiKey
-      tags:
-      - Account
-      summary: Verify API key
-      description: Validates that the supplied API key is active.
+      summary: Check If API Key Is Valid
+      description: This endpoint checks if your API key is valid.
+      operationId: checkKey
       responses:
         '200':
-          description: API key status.
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/KeyVerification'
+                $ref: '#/components/schemas/verifyKey'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                AuthorizationHeaderNotSet:
+                  value:
+                    code: error.authorization.not_set
+                    message: Authorization headers not set
+                AuthorizationHeaderNotAnBearer:
+                  value:
+                    code: error.authorization.not_bearer
+                    message: Authorization headers do not have prefix 'bearer'
+                UnknowApiKey:
+                  value:
+                    code: error.api.key
+                    message: Unknown api key
+        '404':
+          description: Workspace ID not found
+      security:
+      - BearerAuth: []
+      tags:
+      - Account
+  /account/credits:
+    get:
+      summary: Get Current Balance
+      description: This endpoint provides the current balance of credits available in your workspace.
+      operationId: getAccountCredits
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credits'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                AuthorizationHeaderNotSet:
+                  value:
+                    code: error.authorization.not_set
+                    message: Authorization headers not set
+                AuthorizationHeaderNotAnBearer:
+                  value:
+                    code: error.authorization.not_bearer
+                    message: Authorization headers do not have prefix 'bearer'
+                UnknownApiKey:
+                  value:
+                    code: error.api.key
+                    message: Unknown api key
+        '404':
+          description: Workspace ID not found
+      security:
+      - BearerAuth: []
+      tags:
+      - Account
 components:
   schemas:
-    KeyVerification:
+    Credits:
       type: object
       properties:
-        valid:
-          type: boolean
-          example: true
+        balance:
+          type: number
+          format: double
+          description: Number of credits available on your workspace
+          examples:
+          - 5000
     Error:
       type: object
       properties:
         code:
           type: string
-          example: error.unauthorized
         message:
           type: string
-          example: Invalid API key
-    AccountCredits:
+      required:
+      - code
+      - message
+    verifyKey:
       type: object
+      description: Response returned when API key is valid
       properties:
-        credits:
-          type: integer
-          description: Current credit balance available in the workspace.
-          example: 4820
-  responses:
-    Unauthorized:
-      description: Authorization failed (missing header or invalid API key).
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+        workspace_id:
+          type: string
+          description: The workspace ID associated with this API key
+          example: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
   securitySchemes:
-    bearerAuth:
+    BearerAuth:
       type: http
       scheme: bearer
-      description: 'Pass your API key from the FullEnrich dashboard as a Bearer token in the Authorization header: `Authorization: Bearer YOUR_API_KEY`.'
+      bearerFormat: string

@@ -1,0 +1,148 @@
+generated: '2026-08-14'
+method: probed
+source: >-
+  https://app.fullenrich.com/.well-known/openid-configuration and
+  https://mcp.fullenrich.com/.well-known/oauth-protected-resource — read directly
+  from the provider's published RFC 8414 / RFC 9728 discovery metadata.
+description: >-
+  FullEnrich publishes two OAuth scope surfaces. The application authorization
+  server declares 13 resource-scoped, read/write-split scopes. The MCP
+  authorization server declares a single coarse `api:mcp` scope covering the whole
+  agent surface. Neither is documented in prose anywhere on the developer site —
+  both were recovered from well-known metadata, and no human-readable scope
+  reference page exists.
+docs: null
+docs_gap: >-
+  No published scopes/permissions reference page was found on fullenrich.com,
+  docs.fullenrich.com or help.fullenrich.com. The descriptions below are inferred
+  from the scope names' own resource:action structure and are marked as such —
+  the provider publishes no prose definition to quote.
+
+schemes:
+  - name: FullEnrichOAuth
+    issuer: fullenrich
+    source: well-known/fullenrich-app-openid-configuration.json
+    flows:
+      - flow: authorizationCode
+        authorizationUrl: https://app.fullenrich.com/oauth2/authorize
+        tokenUrl: https://app.fullenrich.com/oauth2/token
+      - flow: clientCredentials
+        tokenUrl: https://app.fullenrich.com/oauth2/token
+  - name: FullEnrichMCPOAuth
+    issuer: https://mcp.fullenrich.com
+    source: well-known/fullenrich-mcp-oauth-authorization-server.json
+    flows:
+      - flow: authorizationCode
+        authorizationUrl: https://mcp.fullenrich.com/authorize
+        tokenUrl: https://mcp.fullenrich.com/token
+
+scope_count: 14
+
+scopes:
+  - scope: workspace:read
+    resource: workspace
+    action: read
+    description: Read workspace configuration and membership. (Inferred from scope name; not documented in prose.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: workspace:write
+    resource: workspace
+    action: write
+    description: Modify workspace configuration and membership. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: enrichment:read
+    resource: enrichment
+    action: read
+    description: Read enrichment jobs and their results. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: enrichment:write
+    resource: enrichment
+    action: write
+    description: Submit enrichment jobs. This is the credit-spending scope. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: crm:read
+    resource: crm
+    action: read
+    description: Read connected CRM objects (HubSpot / Salesforce integrations). (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: crm:write
+    resource: crm
+    action: write
+    description: Write enriched data back to a connected CRM. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: credit:read
+    resource: credit
+    action: read
+    description: Read the workspace credit balance. Corresponds to GET /account/credits. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: credit:write
+    resource: credit
+    action: write
+    description: Modify credit allocation (e.g. per-user credit limits). (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: listing:read
+    resource: listing
+    action: read
+    description: Read saved lists of people/companies. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: listing:write
+    resource: listing
+    action: write
+    description: Create and modify saved lists. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: payment:read
+    resource: payment
+    action: read
+    description: Read billing and payment state. Read-only — no payment:write scope is offered. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: token:read
+    resource: token
+    action: read
+    description: Read API keys / tokens issued for the workspace. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: token:write
+    resource: token
+    action: write
+    description: Issue or revoke API keys / tokens. (Inferred.)
+    flows: [authorizationCode, clientCredentials]
+    sources: [well-known/fullenrich-app-openid-configuration.json]
+  - scope: api:mcp
+    resource: mcp
+    action: all
+    description: >-
+      Single coarse scope granted to an MCP client for the whole agent surface —
+      search, enrichment and export alike. There is no read-only variant, so an
+      agent authorized for search is also authorized to spend credits.
+    flows: [authorizationCode]
+    server: https://mcp.fullenrich.com
+    sources:
+      - well-known/fullenrich-mcp-oauth-protected-resource.json
+      - well-known/fullenrich-mcp-oauth-authorization-server.json
+
+observations:
+  - >-
+    The application server's scopes are cleanly resource:action split, which is
+    good practice, but they are undocumented — an integrator cannot discover them
+    without reading the well-known metadata.
+  - >-
+    The MCP server takes the opposite approach: one scope for everything. Agent
+    least-privilege is therefore not expressible on the MCP surface; the
+    preview-then-confirm pattern FullEnrich documents is a client-side convention,
+    not a scope boundary.
+
+x-evidence:
+  - url: https://app.fullenrich.com/.well-known/openid-configuration
+    http_status: 200
+  - url: https://mcp.fullenrich.com/.well-known/oauth-protected-resource
+    http_status: 200

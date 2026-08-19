@@ -1,0 +1,55 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for FullEnrich Search API
+  version: 1.0.0
+extends: openapi/fullenrich-search-api-openapi.yml
+x-generated: '2026-08-14'
+x-method: generated
+x-source: Derived from openapi/_original/fullenrich-openapi.yml (harvested verbatim from https://mintcdn.com/fullenrich/QlQ00joQ41SH1_-N/api/v2/reference/openapi.yml)
+  plus the API Evangelist artifacts in this repo. Applies our enhancements without mutating the harvested
+  spec.
+actions:
+- target: $.info
+  update:
+    x-apievangelist-provider: fullenrich
+    x-apievangelist-artifacts:
+      authentication: authentication/fullenrich-authentication.yml
+      scopes: scopes/fullenrich-scopes.yml
+      conventions: conventions/fullenrich-conventions.yml
+      errors: errors/fullenrich-problem-types.yml
+      rate-limits: rate-limits/fullenrich-rate-limits.yml
+      plans: plans/fullenrich-plans-pricing.yml
+      lifecycle: lifecycle/fullenrich-lifecycle.yml
+      data-model: data-model/fullenrich-data-model.yml
+      webhooks: asyncapi/fullenrich-webhooks.yml
+      sandbox: sandbox/fullenrich-sandbox.yml
+      mcp: mcp/fullenrich-mcp.yml
+      tool-crosswalk: mcp/fullenrich-tool-crosswalk.yml
+      skills: skills/_index.yml
+      agent-card: a2a/fullenrich-a2a.yml
+    x-rate-limit:
+      requests: 60
+      window: minute
+      scope: account
+      status_on_exceeded: 429
+      headers_published: false
+    x-idempotency:
+      supported: false
+      note: No Idempotency-Key header is published. Credit-level deduplication is not idempotency — a
+        retry creates a new enrichment_id.
+    x-error-envelope:
+      rfc9457: false
+      shape: '{ "code": "<string>", "message": "<string>" }'
+      codes_enumerated: false
+- target: $.servers
+  update:
+  - url: https://app.fullenrich.com/api/v2
+    description: FullEnrich production API (v2). Verified against the published spec and docs on 2026-08-14.
+- target: $.paths["/people/search"].post
+  update:
+    x-credit-cost: 0.25 credits per person exported; results returned are not themselves billed.
+    x-execution: synchronous
+- target: $.paths["/company/search"].post
+  update:
+    x-credit-cost: 0.25 credits per company exported; results returned are not themselves billed.
+    x-execution: synchronous
