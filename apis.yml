@@ -11,6 +11,18 @@ description: FullEnrich is a B2B contact enrichment platform that finds verified
   first-party remote MCP server with 13 tools, publishes nine MIT-licensed Agent
   Skills, serves an A2A agent card, and maintains a machine-readable pricing
   document written for AI agents to read.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 accessModel:
   pricing: freemium
   onboarding: self-serve
