@@ -52,100 +52,11 @@ created: '2026-07-01'
 modified: '2026-08-14'
 specificationVersion: '0.23'
 apis:
-- aid: fullenrich:fullenrich-contact-enrichment-api
-  name: FullEnrich Contact Enrichment API
-  description: Submit up to 100 contacts per request for asynchronous waterfall
-    enrichment across 25+ data sources, then collect the most probable work email,
-    personal email and mobile phone by webhook or by polling the results endpoint.
-  humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
-  baseURL: https://app.fullenrich.com/api/v2
-  tags:
-  - Contact Enrichment
-  - Email Finder
-  - Phone Finder
-  - Waterfall Enrichment
-  properties:
-  - type: OpenAPI
-    url: openapi/fullenrich-contact-enrichment-api-openapi.yml
-  - type: Overlay
-    url: overlays/fullenrich-contact-enrichment-api-overlay.yaml
-  - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
-  - type: APIReference
-    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
-  - type: PostmanCollection
-    url: collections/fullenrich-contact-enrichment-api.postman_collection.json
-  - type: OpenCollection
-    url: collections/fullenrich-contact-enrichment-api.opencollection.json
-- aid: fullenrich:fullenrich-reverse-email-lookup-api
-  name: FullEnrich Reverse Email Lookup API
-  description: Resolve the person and company behind one or more email addresses in
-    bulk, asynchronously, returning the full profile and employment history.
-  humanURL: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/post
-  baseURL: https://app.fullenrich.com/api/v2
-  tags:
-  - Reverse Email Lookup
-  - Identity Resolution
-  properties:
-  - type: OpenAPI
-    url: openapi/fullenrich-reverse-email-lookup-api-openapi.yml
-  - type: Overlay
-    url: overlays/fullenrich-reverse-email-lookup-api-overlay.yaml
-  - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/post
-  - type: APIReference
-    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/get
-  - type: PostmanCollection
-    url: collections/fullenrich-reverse-email-lookup-api.postman_collection.json
-  - type: OpenCollection
-    url: collections/fullenrich-reverse-email-lookup-api.opencollection.json
-- aid: fullenrich:fullenrich-search-api
-  name: FullEnrich Search API
-  description: Synchronously search 800M people and 50M companies with structured
-    filters across role, seniority, function, industry, location, company size and
-    more. Values within a field are OR'd; fields are AND'd.
-  humanURL: https://docs.fullenrich.com/api/v2/people/search/post
-  baseURL: https://app.fullenrich.com/api/v2
-  tags:
-  - People Search
-  - Company Search
-  - Sales Intelligence
-  properties:
-  - type: OpenAPI
-    url: openapi/fullenrich-search-api-openapi.yml
-  - type: Overlay
-    url: overlays/fullenrich-search-api-overlay.yaml
-  - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/general/intro-search
-  - type: APIReference
-    url: https://docs.fullenrich.com/api/v2/people/search/post
-  - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/general/filtering-logic-explained
-  - type: Vocabulary
-    url: https://docs.fullenrich.com/api/v2/general/enums
-- aid: fullenrich:fullenrich-lookup-api
-  name: FullEnrich Lookup API
-  description: Look up a single best-matching person or company from deterministic
-    identifiers — professional network URL or ID, company domain, or full name plus
-    a company identifier.
-  humanURL: https://docs.fullenrich.com/api/v2/people/lookup/post
-  baseURL: https://app.fullenrich.com/api/v2
-  tags:
-  - Lookup
-  - Identity Resolution
-  properties:
-  - type: OpenAPI
-    url: openapi/fullenrich-lookup-api-openapi.yml
-  - type: Overlay
-    url: overlays/fullenrich-lookup-api-overlay.yaml
-  - type: Documentation
-    url: https://docs.fullenrich.com/api/v2/people/lookup/post
-  - type: APIReference
-    url: https://docs.fullenrich.com/api/v2/company/lookup/post
 - aid: fullenrich:fullenrich-account-api
   name: FullEnrich Account API
-  description: Check the workspace credit balance before spending, and validate that
-    an API key is active. Both operations are free.
+  description: >-
+    Check the workspace credit balance before spending, and validate that an API key is active. Both operations
+    are free.
   humanURL: https://docs.fullenrich.com/api/v2/account/credits/get
   baseURL: https://app.fullenrich.com/api/v2
   tags:
@@ -167,9 +78,10 @@ apis:
     url: collections/fullenrich-account-api.opencollection.json
 - aid: fullenrich:fullenrich-mcp-server
   name: FullEnrich MCP Server
-  description: First-party remote Model Context Protocol server exposing 13 tools for
-    B2B contact and company search, waterfall enrichment, and CSV/JSON export.
-    Streamable HTTP transport with browser OAuth against a FullEnrich account.
+  description: >-
+    First-party remote Model Context Protocol server exposing 13 tools for B2B contact and company search,
+    waterfall enrichment, and CSV/JSON export. Streamable HTTP transport with browser OAuth against a
+    FullEnrich account.
   humanURL: https://help.fullenrich.com/en/articles/14190120-mcp-server
   baseURL: https://mcp.fullenrich.com/mcp
   tags:
@@ -185,7 +97,129 @@ apis:
     url: mcp/fullenrich-mcp-documentation.md
   - type: Documentation
     url: https://help.fullenrich.com/en/articles/14190120-mcp-server
+- aid: fullenrich:fullenrich-company-api
+  name: FullEnrich Company API
+  description: The Company API from FullEnrich — 2 operation(s) for company.
+  humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  baseURL: https://app.fullenrich.com/api/v2
+  tags:
+  - Company
+  properties:
+  - type: OpenAPI
+    url: openapi/fullenrich-company-api-openapi.yml
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: PostmanCollection
+    url: collections/fullenrich-contact-enrichment-api.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich-contact-enrichment-api.opencollection.json
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/get
+  - type: PostmanCollection
+    url: collections/fullenrich-reverse-email-lookup-api.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich-reverse-email-lookup-api.opencollection.json
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/general/intro-search
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/people/search/post
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/general/filtering-logic-explained
+  - type: Vocabulary
+    url: https://docs.fullenrich.com/api/v2/general/enums
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/people/lookup/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/company/lookup/post
+- aid: fullenrich:fullenrich-contact-api
+  name: FullEnrich Contact API
+  description: The Contact API from FullEnrich — 4 operation(s) for contact.
+  humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  baseURL: https://app.fullenrich.com/api/v2
+  tags:
+  - Contact
+  properties:
+  - type: OpenAPI
+    url: openapi/fullenrich-contact-api-openapi.yml
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: PostmanCollection
+    url: collections/fullenrich-contact-enrichment-api.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich-contact-enrichment-api.opencollection.json
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/get
+  - type: PostmanCollection
+    url: collections/fullenrich-reverse-email-lookup-api.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich-reverse-email-lookup-api.opencollection.json
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/general/intro-search
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/people/search/post
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/general/filtering-logic-explained
+  - type: Vocabulary
+    url: https://docs.fullenrich.com/api/v2/general/enums
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/people/lookup/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/company/lookup/post
+- aid: fullenrich:fullenrich-people-api
+  name: FullEnrich People API
+  description: The People API from FullEnrich — 2 operation(s) for people.
+  humanURL: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  baseURL: https://app.fullenrich.com/api/v2
+  tags:
+  - People
+  properties:
+  - type: OpenAPI
+    url: openapi/fullenrich-people-api-openapi.yml
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post
+  - type: PostmanCollection
+    url: collections/fullenrich-contact-enrichment-api.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich-contact-enrichment-api.opencollection.json
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/contact/reverse/email/bulk/get
+  - type: PostmanCollection
+    url: collections/fullenrich-reverse-email-lookup-api.postman_collection.json
+  - type: OpenCollection
+    url: collections/fullenrich-reverse-email-lookup-api.opencollection.json
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/general/intro-search
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/people/search/post
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/general/filtering-logic-explained
+  - type: Vocabulary
+    url: https://docs.fullenrich.com/api/v2/general/enums
+  - type: Documentation
+    url: https://docs.fullenrich.com/api/v2/people/lookup/post
+  - type: APIReference
+    url: https://docs.fullenrich.com/api/v2/company/lookup/post
 common:
+- type: Overlay
+  url: overlays/fullenrich-contact-enrichment-api-overlay.yaml
+- type: Overlay
+  url: overlays/fullenrich-reverse-email-lookup-api-overlay.yaml
+- type: Overlay
+  url: overlays/fullenrich-search-api-overlay.yaml
+- type: Overlay
+  url: overlays/fullenrich-lookup-api-overlay.yaml
 - type: OpenAPI
   url: openapi/_original/fullenrich-openapi.yml
 - type: MCPServer
