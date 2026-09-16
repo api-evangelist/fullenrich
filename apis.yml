@@ -266,6 +266,8 @@ common:
   url: https://fullenrich.com/tos
 - type: PrivacyPolicy
   url: https://fullenrich.com/privacy-policy
+- type: Contact
+  url: mailto:support@fullenrich.com
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
