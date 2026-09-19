@@ -61,6 +61,10 @@ apis:
   baseURL: https://app.fullenrich.com/api/v2
   tags:
   - Account
+  - Credit
+  - Billing
+  tags_raw:
+  - Account
   - Credits
   - Billing
   properties:
