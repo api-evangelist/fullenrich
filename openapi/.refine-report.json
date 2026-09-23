@@ -1,18 +1,40 @@
 {
   "provider": "fullenrich",
   "sources": [
-    "fullenrich-account-api-openapi.yml",
-    "fullenrich-contact-enrichment-api-openapi.yml",
-    "fullenrich-reverse-email-lookup-api-openapi.yml"
+    "_original/fullenrich-openapi.yml"
   ],
   "outputs": [
     "fullenrich-account-api-openapi.yml",
-    "fullenrich-contact-enrichment-api-openapi.yml",
-    "fullenrich-reverse-email-lookup-api-openapi.yml"
+    "fullenrich-company-api-openapi.yml",
+    "fullenrich-contact-api-openapi.yml",
+    "fullenrich-people-api-openapi.yml"
   ],
   "archived": [],
   "errors": [],
   "warnings": [],
-  "notes": [],
-  "skipped": []
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "fullenrich-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "fullenrich-openapi.yml: tagged paths GET /account/keys/verify -> Account",
+    "fullenrich-openapi.yml: tagged paths GET /account/credits -> Account",
+    "fullenrich-openapi.yml: tagged paths POST /contact/enrich/bulk -> Contact",
+    "fullenrich-openapi.yml: tagged paths GET /contact/enrich/bulk/{enrichment_id} -> Contact",
+    "fullenrich-openapi.yml: tagged paths POST /contact/reverse/email/bulk -> Contact",
+    "fullenrich-openapi.yml: tagged paths GET /contact/reverse/email/bulk/{enrichment_id} -> Contact",
+    "fullenrich-openapi.yml: tagged paths POST /people/search -> People",
+    "fullenrich-openapi.yml: tagged paths POST /company/search -> Company",
+    "fullenrich-openapi.yml: tagged paths POST /people/lookup -> People",
+    "fullenrich-openapi.yml: tagged paths POST /company/lookup -> Company",
+    "fullenrich-openapi.yml: declared missing tag: Account",
+    "fullenrich-openapi.yml: declared missing tag: Company",
+    "fullenrich-openapi.yml: declared missing tag: Contact",
+    "fullenrich-openapi.yml: declared missing tag: People",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "fullenrich-account-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "fullenrich-company-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "fullenrich-contact-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "fullenrich-people-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }

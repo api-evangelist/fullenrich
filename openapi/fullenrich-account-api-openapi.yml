@@ -1,20 +1,15 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: FullEnrich Account API
-  description: Workspace credit balance and API key validity checks. FullEnrich API enables you to enrich
-    B2B contacts with emails and phone numbers using data from 20+ providers.  We are GDPR and CCPA compliant.
+  title: FullEnrich API Documentation Account API
   version: 2.0.0
-  contact:
-    name: FullEnrich Support
-    url: https://docs.fullenrich.com
-  termsOfService: https://fullenrich.com/tos
+  description: 'FullEnrich API enables you to enrich B2B contacts with emails and phone numbers using data from 20+ providers.
+
+
+    We are GDPR and CCPA compliant.'
 servers:
 - url: https://app.fullenrich.com/api/v2
-security:
-- BearerAuth: []
 tags:
 - name: Account
-  description: Workspace credit balance and API key validity checks.
 paths:
   /account/keys/verify:
     get:
