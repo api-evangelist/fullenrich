@@ -87,15 +87,6 @@ paths:
       - Account
 components:
   schemas:
-    Credits:
-      type: object
-      properties:
-        balance:
-          type: number
-          format: double
-          description: Number of credits available on your workspace
-          examples:
-          - 5000
     Error:
       type: object
       properties:
@@ -114,6 +105,15 @@ components:
           type: string
           description: The workspace ID associated with this API key
           example: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+    Credits:
+      type: object
+      properties:
+        balance:
+          type: number
+          format: double
+          description: Number of credits available on your workspace
+          examples:
+          - 5000
   securitySchemes:
     BearerAuth:
       type: http
