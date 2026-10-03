@@ -97,14 +97,6 @@ components:
       required:
       - code
       - message
-    verifyKey:
-      type: object
-      description: Response returned when API key is valid
-      properties:
-        workspace_id:
-          type: string
-          description: The workspace ID associated with this API key
-          example: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
     Credits:
       type: object
       properties:
@@ -114,6 +106,14 @@ components:
           description: Number of credits available on your workspace
           examples:
           - 5000
+    verifyKey:
+      type: object
+      description: Response returned when API key is valid
+      properties:
+        workspace_id:
+          type: string
+          description: The workspace ID associated with this API key
+          example: 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
   securitySchemes:
     BearerAuth:
       type: http

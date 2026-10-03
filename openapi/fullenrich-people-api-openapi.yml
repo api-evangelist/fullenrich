@@ -131,17 +131,82 @@ paths:
       - People
 components:
   schemas:
-    LookUpMetadata:
+    Employment:
       type: object
       properties:
-        metadata:
+        title:
+          type: string
+          description: Job title or position
+          example: Senior Software Engineer
+        seniority:
+          type: string
+          description: Seniority level of the person in the company
+          example: Senior
+        job_functions:
+          type: array
+          description: Job functions of the person in the company
+          items:
+            type: object
+            properties:
+              function:
+                type: string
+                description: Job function
+                example: Not Employed
+              sub_function:
+                type: string
+                description: Sub function of the job function
+                example: Freelancer
+        description:
+          type: string
+          description: Description of the role and responsibilities. Not always present.
+          example: Leading the backend team and designing microservices architecture.
+        company:
           type: object
-          properties:
-            credits:
-              type: number
-              format: double
-              description: Total number of credits consumed
-              example: 0.25
+          description: Company information
+          allOf:
+          - $ref: '#/components/schemas/EmploymentCompany'
+        is_current:
+          type: boolean
+          description: Whether this is the current employment
+          example: true
+        start_at:
+          type: string
+          format: date-time
+          description: Employment start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2022-03-15T00:00:00Z'
+        end_at:
+          type: string
+          format: date-time
+          description: Employment end date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ). This field is not returned for current employment (when is_current is true).
+          example: '2024-06-30T00:00:00Z'
+    CompanyAddress:
+      type: object
+      description: Structured headquarters address with parsed location fields
+      properties:
+        line1:
+          type: string
+          description: Address line 1 (street address)
+          example: 548 Market St
+        line2:
+          type: string
+          description: Address line 2 (full location string including city, region, postal code, and country code)
+          example: San Francisco, CA 94105, US
+        city:
+          type: string
+          description: City name
+          example: San Francisco
+        region:
+          type: string
+          description: State or region
+          example: California
+        country:
+          type: string
+          description: Country name
+          example: United States
+        country_code:
+          type: string
+          description: ISO country code
+          example: US
     PersonLanguage:
       type: object
       properties:
@@ -153,189 +218,6 @@ components:
           type: string
           description: Proficiency level in the language (e.g., 'NATIVE_OR_BILINGUAL', 'FULL_PROFESSIONAL', 'PROFESSIONAL_WORKING', 'LIMITED_WORKING', 'ELEMENTARY')
           example: NATIVE_OR_BILINGUAL
-    PersonEducation:
-      type: object
-      properties:
-        school_name:
-          type: string
-          description: Name of the educational institution
-          example: Stanford University
-        degree:
-          type: string
-          description: Degree or qualification obtained
-          example: Bachelor of Science in Computer Science
-        start_at:
-          type: string
-          format: date-time
-          description: Start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
-          example: '2015-09-01T00:00:00Z'
-        end_at:
-          type: string
-          format: date-time
-          description: End date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
-          example: '2019-06-01T00:00:00Z'
-    LookUpPeopleResponse:
-      type: object
-      properties:
-        people:
-          type: array
-          description: Array containing the matching person. Returns an empty array if no match is found.
-          items:
-            $ref: '#/components/schemas/Person'
-    Person:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique person identifier
-          example: 746e4816-19c8-54d8-b558-65a5a52cc85c
-        full_name:
-          type: string
-          description: Person's full name
-          example: Enzo Romera
-        first_name:
-          type: string
-          description: Person's first name
-          example: Enzo
-        last_name:
-          type: string
-          description: Person's last name
-          example: Romera
-        headline:
-          type: string
-          description: Short professional tagline written by the person on their professional network profile
-          example: Marketing Strategist | 10+ Years in Strategy, Account Management & Activation | Consulting Expert
-        description:
-          type: string
-          description: Free-text summary written by the person in the about section of their professional network profile. Omitted when not available.
-          example: Marketing strategist with 10+ years helping B2B companies build demand generation engines. I work with go-to-market teams on positioning, account-based campaigns and channel activation.
-        location:
-          type: object
-          description: Person's location information
-          properties:
-            country:
-              type: string
-              description: Country name
-              example: United States
-            country_code:
-              type: string
-              description: ISO country code
-              example: US
-            city:
-              type: string
-              description: City name
-              example: San Francisco
-            region:
-              type: string
-              description: Region or state
-              example: California
-        social_profiles:
-          type: object
-          description: Person's social media profiles
-          allOf:
-          - $ref: '#/components/schemas/PersonSocialProfile'
-        educations:
-          type: array
-          description: Person's education history
-          items:
-            $ref: '#/components/schemas/PersonEducation'
-        languages:
-          type: array
-          description: Languages spoken by the person
-          items:
-            $ref: '#/components/schemas/PersonLanguage'
-        skills:
-          type: array
-          description: Person's professional skills
-          items:
-            type: string
-          example:
-          - JavaScript
-          - Project Management
-          - Python
-        employment:
-          type: object
-          description: Person's employment history
-          properties:
-            current:
-              type: object
-              description: Current employment information. If the person is in their current position, the end_at field will not be returned.
-              allOf:
-              - $ref: '#/components/schemas/Employment'
-            all:
-              type: array
-              description: All employment history (current and past)
-              items:
-                $ref: '#/components/schemas/Employment'
-    CompanySocialProfile:
-      type: object
-      properties:
-        professional_network:
-          type: object
-          description: Professional network profile information
-          properties:
-            id:
-              type: integer
-              description: Professional network profile ID
-              example: 1234
-            url:
-              type: string
-              description: Full professional network profile URL
-              example: https://www.linkedin.com/company/anthropic
-            handle:
-              type: string
-              description: Professional network profile handle/username
-              example: anthropic
-            connection_count:
-              type: integer
-              description: Number of professional network followers
-              example: 125000
-    PersonSocialProfile:
-      type: object
-      properties:
-        professional_network:
-          type: object
-          description: Professional network profile information
-          properties:
-            id:
-              type: integer
-              description: Professional network profile ID
-              example: 1234
-            url:
-              type: string
-              description: Full professional network profile URL
-              example: https://www.linkedin.com/in/john-doe
-            handle:
-              type: string
-              description: Professional network profile handle/username
-              example: john-doe
-            connection_count:
-              type: integer
-              description: Number of professional network connections
-              example: 500
-    Metadata:
-      type: object
-      properties:
-        metadata:
-          type: object
-          properties:
-            total:
-              type: integer
-              description: Total number of results matching the search criteria
-              example: 20523
-            credits:
-              type: number
-              format: double
-              description: Total number of credits consumed
-              example: 22.5
-            offset:
-              type: integer
-              description: Number of results skipped (for pagination)
-              example: 0
-            search_after:
-              type: string
-              description: The cursor value returned by the previous page. Use this to paginate through the results.
-              example: WzE1LjUzNDU2MywiYjQ5MDBiYmQtOTg5MS01Mzk1LWIyODUtOWEyOGNiZThjOTM3Il0=
     SearchPeopleRequest:
       type: object
       properties:
@@ -1014,6 +896,91 @@ components:
           - min: 0
             max: 90
             exclude: false
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique person identifier
+          example: 746e4816-19c8-54d8-b558-65a5a52cc85c
+        full_name:
+          type: string
+          description: Person's full name
+          example: Enzo Romera
+        first_name:
+          type: string
+          description: Person's first name
+          example: Enzo
+        last_name:
+          type: string
+          description: Person's last name
+          example: Romera
+        headline:
+          type: string
+          description: Short professional tagline written by the person on their professional network profile
+          example: Marketing Strategist | 10+ Years in Strategy, Account Management & Activation | Consulting Expert
+        description:
+          type: string
+          description: Free-text summary written by the person in the about section of their professional network profile. Omitted when not available.
+          example: Marketing strategist with 10+ years helping B2B companies build demand generation engines. I work with go-to-market teams on positioning, account-based campaigns and channel activation.
+        location:
+          type: object
+          description: Person's location information
+          properties:
+            country:
+              type: string
+              description: Country name
+              example: United States
+            country_code:
+              type: string
+              description: ISO country code
+              example: US
+            city:
+              type: string
+              description: City name
+              example: San Francisco
+            region:
+              type: string
+              description: Region or state
+              example: California
+        social_profiles:
+          type: object
+          description: Person's social media profiles
+          allOf:
+          - $ref: '#/components/schemas/PersonSocialProfile'
+        educations:
+          type: array
+          description: Person's education history
+          items:
+            $ref: '#/components/schemas/PersonEducation'
+        languages:
+          type: array
+          description: Languages spoken by the person
+          items:
+            $ref: '#/components/schemas/PersonLanguage'
+        skills:
+          type: array
+          description: Person's professional skills
+          items:
+            type: string
+          example:
+          - JavaScript
+          - Project Management
+          - Python
+        employment:
+          type: object
+          description: Person's employment history
+          properties:
+            current:
+              type: object
+              description: Current employment information. If the person is in their current position, the end_at field will not be returned.
+              allOf:
+              - $ref: '#/components/schemas/Employment'
+            all:
+              type: array
+              description: All employment history (current and past)
+              items:
+                $ref: '#/components/schemas/Employment'
     OfficeAddress:
       type: object
       description: Office address. Unlike headquarters, office addresses only contain raw address lines without parsed location fields.
@@ -1026,54 +993,100 @@ components:
           type: string
           description: Full location string (city, region, postal code, country code)
           example: New York, NY 10011, US
-    Employment:
+    Metadata:
       type: object
       properties:
-        title:
-          type: string
-          description: Job title or position
-          example: Senior Software Engineer
-        seniority:
-          type: string
-          description: Seniority level of the person in the company
-          example: Senior
-        job_functions:
-          type: array
-          description: Job functions of the person in the company
-          items:
-            type: object
-            properties:
-              function:
-                type: string
-                description: Job function
-                example: Not Employed
-              sub_function:
-                type: string
-                description: Sub function of the job function
-                example: Freelancer
-        description:
-          type: string
-          description: Description of the role and responsibilities. Not always present.
-          example: Leading the backend team and designing microservices architecture.
-        company:
+        metadata:
           type: object
-          description: Company information
-          allOf:
-          - $ref: '#/components/schemas/EmploymentCompany'
-        is_current:
-          type: boolean
-          description: Whether this is the current employment
-          example: true
+          properties:
+            total:
+              type: integer
+              description: Total number of results matching the search criteria
+              example: 20523
+            credits:
+              type: number
+              format: double
+              description: Total number of credits consumed
+              example: 22.5
+            offset:
+              type: integer
+              description: Number of results skipped (for pagination)
+              example: 0
+            search_after:
+              type: string
+              description: The cursor value returned by the previous page. Use this to paginate through the results.
+              example: WzE1LjUzNDU2MywiYjQ5MDBiYmQtOTg5MS01Mzk1LWIyODUtOWEyOGNiZThjOTM3Il0=
+    LookUpMetadata:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            credits:
+              type: number
+              format: double
+              description: Total number of credits consumed
+              example: 0.25
+    SearchPeopleResponse:
+      type: object
+      properties:
+        people:
+          type: array
+          description: Array of people matching the search criteria. Returns empty array if no results found.
+          items:
+            $ref: '#/components/schemas/Person'
+    PersonEducation:
+      type: object
+      properties:
+        school_name:
+          type: string
+          description: Name of the educational institution
+          example: Stanford University
+        degree:
+          type: string
+          description: Degree or qualification obtained
+          example: Bachelor of Science in Computer Science
         start_at:
           type: string
           format: date-time
-          description: Employment start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
-          example: '2022-03-15T00:00:00Z'
+          description: Start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2015-09-01T00:00:00Z'
         end_at:
           type: string
           format: date-time
-          description: Employment end date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ). This field is not returned for current employment (when is_current is true).
-          example: '2024-06-30T00:00:00Z'
+          description: End date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2019-06-01T00:00:00Z'
+    LookUpPeopleResponse:
+      type: object
+      properties:
+        people:
+          type: array
+          description: Array containing the matching person. Returns an empty array if no match is found.
+          items:
+            $ref: '#/components/schemas/Person'
+    CompanySocialProfile:
+      type: object
+      properties:
+        professional_network:
+          type: object
+          description: Professional network profile information
+          properties:
+            id:
+              type: integer
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/company/anthropic
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: anthropic
+            connection_count:
+              type: integer
+              description: Number of professional network followers
+              example: 125000
     Error:
       type: object
       properties:
@@ -1084,34 +1097,29 @@ components:
       required:
       - code
       - message
-    LookUpPeopleRequest:
+    PersonSocialProfile:
       type: object
-      description: Provide at least one identifier to match a single person. The professional network URL or ID is the most reliable. A full name can be combined with a company identifier (domain, professional network URL, or professional network ID) to disambiguate the match.
       properties:
-        person_name:
-          type: string
-          description: Full name of the person to look up.
-          example: Enzo Romera
-        person_professional_network_url:
-          type: string
-          description: Professional network profile URL of the person.
-          example: https://www.linkedin.com/in/enzo-romera
-        person_professional_network_id:
-          type: integer
-          description: Professional network profile ID of the person.
-          example: 530992355
-        company_professional_network_url:
-          type: string
-          description: Professional network URL of the company the person works for. Used to disambiguate when looking up by name.
-          example: https://www.linkedin.com/company/anthropic
-        company_professional_network_id:
-          type: integer
-          description: Professional network ID of the company the person works for. Used to disambiguate when looking up by name.
-          example: 1883877
-        company_domain:
-          type: string
-          description: Domain of the company the person works for. Used to disambiguate when looking up by name.
-          example: anthropic.com
+        professional_network:
+          type: object
+          description: Professional network profile information
+          properties:
+            id:
+              type: integer
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/in/john-doe
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: john-doe
+            connection_count:
+              type: integer
+              description: Number of professional network connections
+              example: 500
     EmploymentCompany:
       type: object
       properties:
@@ -1191,42 +1199,34 @@ components:
           type: string
           description: URL of the company logo hosted by FullEnrich, built from the company's professional network handle. Empty when the handle is unknown.
           example: https://app.fullenrich.com/logo/company/handle/anthropic
-    CompanyAddress:
+    LookUpPeopleRequest:
       type: object
-      description: Structured headquarters address with parsed location fields
+      description: Provide at least one identifier to match a single person. The professional network URL or ID is the most reliable. A full name can be combined with a company identifier (domain, professional network URL, or professional network ID) to disambiguate the match.
       properties:
-        line1:
+        person_name:
           type: string
-          description: Address line 1 (street address)
-          example: 548 Market St
-        line2:
+          description: Full name of the person to look up.
+          example: Enzo Romera
+        person_professional_network_url:
           type: string
-          description: Address line 2 (full location string including city, region, postal code, and country code)
-          example: San Francisco, CA 94105, US
-        city:
+          description: Professional network profile URL of the person.
+          example: https://www.linkedin.com/in/enzo-romera
+        person_professional_network_id:
+          type: integer
+          description: Professional network profile ID of the person.
+          example: 530992355
+        company_professional_network_url:
           type: string
-          description: City name
-          example: San Francisco
-        region:
+          description: Professional network URL of the company the person works for. Used to disambiguate when looking up by name.
+          example: https://www.linkedin.com/company/anthropic
+        company_professional_network_id:
+          type: integer
+          description: Professional network ID of the company the person works for. Used to disambiguate when looking up by name.
+          example: 1883877
+        company_domain:
           type: string
-          description: State or region
-          example: California
-        country:
-          type: string
-          description: Country name
-          example: United States
-        country_code:
-          type: string
-          description: ISO country code
-          example: US
-    SearchPeopleResponse:
-      type: object
-      properties:
-        people:
-          type: array
-          description: Array of people matching the search criteria. Returns empty array if no results found.
-          items:
-            $ref: '#/components/schemas/Person'
+          description: Domain of the company the person works for. Used to disambiguate when looking up by name.
+          example: anthropic.com
   securitySchemes:
     BearerAuth:
       type: http
