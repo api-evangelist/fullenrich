@@ -131,6 +131,121 @@ paths:
       - Company
 components:
   schemas:
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique company identifier
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        name:
+          type: string
+          description: Company name
+          example: Anthropic
+        domain:
+          type: string
+          description: Company domain
+          example: anthropic.com
+        website:
+          type: string
+          description: Company website URL as declared by the company. May differ from `domain` (can include a subdomain, a path or tracking parameters). Omitted when not available.
+          example: https://www.anthropic.com
+        description:
+          type: string
+          description: Company description
+          example: AI safety and research company building reliable, interpretable, and steerable AI systems.
+        year_founded:
+          type: integer
+          description: Year the company was founded. Returns 0 when unknown.
+          example: 2021
+        headcount:
+          type: integer
+          description: Exact number of employees. May return 0 even when headcount_range is available.
+          example: 2610
+        headcount_range:
+          type: string
+          description: Employee count range (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5001-10000', '10001+')
+          example: 1001-5000
+        company_type:
+          type: string
+          description: Type of company (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed', 'Partnership', 'Educational', 'Government Agency')
+          example: Privately Held
+        locations:
+          type: object
+          description: Company location information
+          properties:
+            headquarters:
+              type: object
+              description: Main headquarters address with structured location fields. Can be an empty object when no headquarters data is available.
+              allOf:
+              - $ref: '#/components/schemas/CompanyAddress'
+            offices:
+              type: array
+              description: Additional office locations. Only contains raw address lines (line1, line2) without structured city/region/country fields. Can be null or an empty array.
+              nullable: true
+              items:
+                $ref: '#/components/schemas/OfficeAddress'
+        social_profiles:
+          type: object
+          description: Company's social media profiles
+          allOf:
+          - $ref: '#/components/schemas/CompanySocialProfile'
+        specialties:
+          type: array
+          description: Specialties associated with the company
+          items:
+            type: string
+          example:
+          - artificial intelligence
+          - machine learning
+          - AI safety
+        industry:
+          type: object
+          description: Company industry information
+          properties:
+            main_industry:
+              type: string
+              description: Primary industry category (e.g., 'Software Development', 'Computer Hardware Manufacturing', 'Financial Services', 'Healthcare', 'Retail')
+              example: Software Development
+        logo_url:
+          type: string
+          description: URL of the company logo hosted by FullEnrich, built from the company's professional network handle. Empty when the handle is unknown.
+          example: https://app.fullenrich.com/logo/company/handle/anthropic
+    CompanySocialProfile:
+      type: object
+      properties:
+        professional_network:
+          type: object
+          description: Professional network profile information
+          properties:
+            id:
+              type: integer
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/company/anthropic
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: anthropic
+            connection_count:
+              type: integer
+              description: Number of professional network followers
+              example: 125000
+    OfficeAddress:
+      type: object
+      description: Office address. Unlike headquarters, office addresses only contain raw address lines without parsed location fields.
+      properties:
+        line1:
+          type: string
+          description: Street address
+          example: 111 8th Ave
+        line2:
+          type: string
+          description: Full location string (city, region, postal code, country code)
+          example: New York, NY 10011, US
     CompanyAddress:
       type: object
       description: Structured headquarters address with parsed location fields
@@ -159,86 +274,6 @@ components:
           type: string
           description: ISO country code
           example: US
-    SearchCompanyResponse:
-      type: object
-      properties:
-        companies:
-          type: array
-          description: Array of companies matching the search criteria. Returns empty array if no results found.
-          items:
-            $ref: '#/components/schemas/Company'
-    OfficeAddress:
-      type: object
-      description: Office address. Unlike headquarters, office addresses only contain raw address lines without parsed location fields.
-      properties:
-        line1:
-          type: string
-          description: Street address
-          example: 111 8th Ave
-        line2:
-          type: string
-          description: Full location string (city, region, postal code, country code)
-          example: New York, NY 10011, US
-    Metadata:
-      type: object
-      properties:
-        metadata:
-          type: object
-          properties:
-            total:
-              type: integer
-              description: Total number of results matching the search criteria
-              example: 20523
-            credits:
-              type: number
-              format: double
-              description: Total number of credits consumed
-              example: 22.5
-            offset:
-              type: integer
-              description: Number of results skipped (for pagination)
-              example: 0
-            search_after:
-              type: string
-              description: The cursor value returned by the previous page. Use this to paginate through the results.
-              example: WzE1LjUzNDU2MywiYjQ5MDBiYmQtOTg5MS01Mzk1LWIyODUtOWEyOGNiZThjOTM3Il0=
-    LookUpMetadata:
-      type: object
-      properties:
-        metadata:
-          type: object
-          properties:
-            credits:
-              type: number
-              format: double
-              description: Total number of credits consumed
-              example: 0.25
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-      required:
-      - code
-      - message
-    LookUpCompanyRequest:
-      type: object
-      description: Provide at least one identifier to match a single company. The domain or professional network URL/ID give the most reliable match.
-      properties:
-        domain:
-          type: string
-          description: Company domain to look up.
-          example: anthropic.com
-        professional_network_url:
-          type: string
-          description: Professional network URL of the company.
-          example: https://www.linkedin.com/company/anthropic
-        professional_network_id:
-          type: integer
-          description: Professional network ID of the company.
-          example: 1883877
     SearchCompanyRequest:
       type: object
       properties:
@@ -525,109 +560,74 @@ components:
           description: Array containing the matching company. Returns an empty array if no match is found.
           items:
             $ref: '#/components/schemas/Company'
-    CompanySocialProfile:
+    LookUpMetadata:
       type: object
       properties:
-        professional_network:
+        metadata:
           type: object
-          description: Professional network profile information
           properties:
-            id:
-              type: integer
-              description: Professional network profile ID
-              example: 1234
-            url:
-              type: string
-              description: Full professional network profile URL
-              example: https://www.linkedin.com/company/anthropic
-            handle:
-              type: string
-              description: Professional network profile handle/username
-              example: anthropic
-            connection_count:
-              type: integer
-              description: Number of professional network followers
-              example: 125000
-    Company:
+            credits:
+              type: number
+              format: double
+              description: Total number of credits consumed
+              example: 0.25
+    Error:
       type: object
       properties:
-        id:
+        code:
           type: string
-          description: Unique company identifier
-          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-        name:
+        message:
           type: string
-          description: Company name
-          example: Anthropic
+      required:
+      - code
+      - message
+    LookUpCompanyRequest:
+      type: object
+      description: Provide at least one identifier to match a single company. The domain or professional network URL/ID give the most reliable match.
+      properties:
         domain:
           type: string
-          description: Company domain
+          description: Company domain to look up.
           example: anthropic.com
-        website:
+        professional_network_url:
           type: string
-          description: Company website URL as declared by the company. May differ from `domain` (can include a subdomain, a path or tracking parameters). Omitted when not available.
-          example: https://www.anthropic.com
-        description:
-          type: string
-          description: Company description
-          example: AI safety and research company building reliable, interpretable, and steerable AI systems.
-        year_founded:
+          description: Professional network URL of the company.
+          example: https://www.linkedin.com/company/anthropic
+        professional_network_id:
           type: integer
-          description: Year the company was founded. Returns 0 when unknown.
-          example: 2021
-        headcount:
-          type: integer
-          description: Exact number of employees. May return 0 even when headcount_range is available.
-          example: 2610
-        headcount_range:
-          type: string
-          description: Employee count range (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5001-10000', '10001+')
-          example: 1001-5000
-        company_type:
-          type: string
-          description: Type of company (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed', 'Partnership', 'Educational', 'Government Agency')
-          example: Privately Held
-        locations:
+          description: Professional network ID of the company.
+          example: 1883877
+    Metadata:
+      type: object
+      properties:
+        metadata:
           type: object
-          description: Company location information
           properties:
-            headquarters:
-              type: object
-              description: Main headquarters address with structured location fields. Can be an empty object when no headquarters data is available.
-              allOf:
-              - $ref: '#/components/schemas/CompanyAddress'
-            offices:
-              type: array
-              description: Additional office locations. Only contains raw address lines (line1, line2) without structured city/region/country fields. Can be null or an empty array.
-              nullable: true
-              items:
-                $ref: '#/components/schemas/OfficeAddress'
-        social_profiles:
-          type: object
-          description: Company's social media profiles
-          allOf:
-          - $ref: '#/components/schemas/CompanySocialProfile'
-        specialties:
-          type: array
-          description: Specialties associated with the company
-          items:
-            type: string
-          example:
-          - artificial intelligence
-          - machine learning
-          - AI safety
-        industry:
-          type: object
-          description: Company industry information
-          properties:
-            main_industry:
+            total:
+              type: integer
+              description: Total number of results matching the search criteria
+              example: 20523
+            credits:
+              type: number
+              format: double
+              description: Total number of credits consumed
+              example: 22.5
+            offset:
+              type: integer
+              description: Number of results skipped (for pagination)
+              example: 0
+            search_after:
               type: string
-              description: Primary industry category (e.g., 'Software Development', 'Computer Hardware Manufacturing', 'Financial Services', 'Healthcare', 'Retail')
-              example: Software Development
-        logo_url:
-          type: string
-          description: URL of the company logo hosted by FullEnrich, built from the company's professional network handle. Empty when the handle is unknown.
-          example: https://app.fullenrich.com/logo/company/handle/anthropic
+              description: The cursor value returned by the previous page. Use this to paginate through the results.
+              example: WzE1LjUzNDU2MywiYjQ5MDBiYmQtOTg5MS01Mzk1LWIyODUtOWEyOGNiZThjOTM3Il0=
+    SearchCompanyResponse:
+      type: object
+      properties:
+        companies:
+          type: array
+          description: Array of companies matching the search criteria. Returns empty array if no results found.
+          items:
+            $ref: '#/components/schemas/Company'
   securitySchemes:
     BearerAuth:
       type: http
