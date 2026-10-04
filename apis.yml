@@ -37,6 +37,10 @@ accessModel:
   generated: '2026-08-14'
   method: derived
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/fullenrich.png
+x-docs-platform: mintlify
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-10-03
+x-docs-hosting: vercel
 tags:
 - B2B Data
 - Contact Enrichment
@@ -49,6 +53,7 @@ tags:
 - Reverse Email Lookup
 - Agent Ready
 - A2A
+- Data Enrichment
 created: '2026-07-01'
 modified: '2026-08-14'
 specificationVersion: '0.23'
@@ -217,6 +222,9 @@ apis:
   - type: APIReference
     url: https://docs.fullenrich.com/api/v2/company/lookup/post
 common:
+- type: CapabilityMap
+  url: capabilities/fullenrich-capability-edges.yml
+  name: FullEnrich Business Capability Map
 - type: Overlay
   url: overlays/fullenrich-contact-enrichment-api-overlay.yaml
 - type: Overlay
