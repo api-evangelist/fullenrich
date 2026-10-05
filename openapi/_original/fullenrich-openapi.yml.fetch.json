@@ -1,0 +1,12 @@
+{
+ "url": "https://docs.fullenrich.com/api/v2/reference/openapi.yaml",
+ "requested_url": "https://docs.fullenrich.com/api/v2/reference/openapi.yaml",
+ "status": 200,
+ "content_type": "text/yaml",
+ "bytes": 125805,
+ "sha256": "34e8aef881f2314219a42c04e92d92b57b11a52ad92fa9a4b726c67bd1b19c68",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "equivalent",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the provider's current document describes the same operations (Jaccard 1.0), but the bytes differ, so the archive is an earlier or reformatted copy."
+}
