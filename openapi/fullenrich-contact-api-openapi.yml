@@ -638,24 +638,14 @@ paths:
       - Contact
 components:
   schemas:
-    Email:
+    ContactReverseEmailInput:
       type: object
       properties:
         email:
           type: string
           examples:
           - john.snow@example.com
-        status:
-          type: string
-          examples:
-          - DELIVERABLE
-          enum:
-          - DELIVERABLE
-          - HIGH_PROBABILITY
-          - CATCH_ALL
-          - INVALID
-          - INVALID_DOMAIN
-    ResponseGetContactBulkReverseEmail:
+    ResponseGetContactBulkEnrich:
       type: object
       properties:
         id:
@@ -666,7 +656,7 @@ components:
         name:
           type: string
           examples:
-          - Start Reverse Email Lookup Operation
+          - Sales Operations in London
         status:
           type: string
           examples:
@@ -682,9 +672,34 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/RecordReverseEmail'
+            $ref: '#/components/schemas/RecordEnrichment'
         cost:
           $ref: '#/components/schemas/Cost'
+    RequestPostContactBulkEnrichContact:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        domain:
+          type: string
+        company_name:
+          type: string
+        linkedin_url:
+          type: string
+          description: Supports standard LinkedIn profile URLs (e.g., https://www.linkedin.com/in/demoge) as well as LinkedIn Sales Navigator URLs (e.g., https://www.linkedin.com/in/ACwAACLLwaIBKi655883b).
+        enrich_fields:
+          type: array
+          items:
+            type: string
+            enum:
+            - contact.work_emails
+            - contact.phones
+            - contact.personal_emails
+        custom:
+          type: object
+          description: Returned in the enrichment result. Use it to identify a user, a CRM contact, or to pass any other information. All values must be strings. Limited to 20 entries.
     ContactEnrichedInformation:
       type: object
       description: Contact information found during enrichment
@@ -713,35 +728,118 @@ components:
           description: All mobile phone numbers found
           items:
             $ref: '#/components/schemas/Phone'
-    PersonEducation:
+    RequestPostContactBulkEnrich:
+      type: object
+      example:
+        name: Sales Operations in London
+        webhook_url: https://example.com/webhook
+        webhook_events:
+          contact_finished: https://example.com/webhook/contact
+        data:
+        - first_name: John
+          last_name: Snow
+          domain: example.com
+          company_name: Example Inc
+          professional_network_url: https://www.linkedin.com/in/demoge/
+          enrich_fields:
+          - contact.work_emails
+          - contact.personal_emails
+          - contact.phones
+          custom:
+            user_id: '12584'
+      properties:
+        name:
+          type: string
+          description: A readable name for this enrichment (visible in your dashboard)
+        webhook_url:
+          type: string
+          description: URL that will receive a POST request when the entire enrichment is finished (all contacts processed).
+        webhook_events:
+          type: object
+          description: Optional webhook URLs for specific events during enrichment
+          properties:
+            contact_finished:
+              type: string
+              description: URL that receives a POST request each time a single contact is enriched, without waiting for the entire batch to complete. Useful for real-time updates.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestPostContactBulkEnrichContact'
+      required:
+      - name
+      - data
+    PersonLanguage:
       type: object
       properties:
-        school_name:
+        language:
           type: string
-          description: Name of the educational institution
-          example: Stanford University
-        degree:
+          description: Language name
+          example: French
+        proficiency:
           type: string
-          description: Degree or qualification obtained
-          example: Bachelor of Science in Computer Science
-        start_at:
-          type: string
-          format: date-time
-          description: Start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
-          example: '2015-09-01T00:00:00Z'
-        end_at:
-          type: string
-          format: date-time
-          description: End date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
-          example: '2019-06-01T00:00:00Z'
-    ResponsePostContactBulkEnrich:
+          description: Proficiency level in the language (e.g., 'NATIVE_OR_BILINGUAL', 'FULL_PROFESSIONAL', 'PROFESSIONAL_WORKING', 'LIMITED_WORKING', 'ELEMENTARY')
+          example: NATIVE_OR_BILINGUAL
+    CompanySocialProfile:
       type: object
       properties:
-        enrichment_id:
+        professional_network:
+          type: object
+          description: Professional network profile information
+          properties:
+            id:
+              type: integer
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/company/anthropic
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: anthropic
+            connection_count:
+              type: integer
+              description: Number of professional network followers
+              example: 125000
+    CompanyAddress:
+      type: object
+      description: Structured headquarters address with parsed location fields
+      properties:
+        line1:
           type: string
-          format: uuid
-          examples:
-          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+          description: Address line 1 (street address)
+          example: 548 Market St
+        line2:
+          type: string
+          description: Address line 2 (full location string including city, region, postal code, and country code)
+          example: San Francisco, CA 94105, US
+        city:
+          type: string
+          description: City name
+          example: San Francisco
+        region:
+          type: string
+          description: State or region
+          example: California
+        country:
+          type: string
+          description: Country name
+          example: United States
+        country_code:
+          type: string
+          description: ISO country code
+          example: US
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - code
+      - message
     RequestPostContactBulkReverseEmail:
       type: object
       properties:
@@ -784,18 +882,224 @@ components:
       required:
       - name
       - data
-    PersonLanguage:
+    RecordEnrichment:
+      type: object
+      description: A single enriched contact record
+      properties:
+        input:
+          description: The original input data provided for this contact
+          $ref: '#/components/schemas/ContactEnrichmentInput'
+        custom:
+          type: object
+          description: Custom fields passed during enrichment request, returned unchanged
+          examples:
+          - user_id: '12584'
+        contact_info:
+          description: Contact information found during enrichment (emails and phone numbers)
+          $ref: '#/components/schemas/ContactEnrichedInformation'
+        profile:
+          description: Full professional profile of the person (returned when linkedin_url was provided)
+          $ref: '#/components/schemas/Person'
+    ResponseGetContactBulkReverseEmail:
       type: object
       properties:
-        language:
+        id:
           type: string
-          description: Language name
-          example: French
-        proficiency:
+          format: uuid
+          examples:
+          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+        name:
           type: string
-          description: Proficiency level in the language (e.g., 'NATIVE_OR_BILINGUAL', 'FULL_PROFESSIONAL', 'PROFESSIONAL_WORKING', 'LIMITED_WORKING', 'ELEMENTARY')
-          example: NATIVE_OR_BILINGUAL
-    CompanySocialProfile:
+          examples:
+          - Start Reverse Email Lookup Operation
+        status:
+          type: string
+          examples:
+          - FINISHED
+          enum:
+          - CREATED
+          - IN_PROGRESS
+          - CANCELED
+          - CREDITS_INSUFFICIENT
+          - FINISHED
+          - RATE_LIMIT
+          - UNKNOWN
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecordReverseEmail'
+        cost:
+          $ref: '#/components/schemas/Cost'
+    ContactEnrichmentInput:
+      type: object
+      description: The input data originally provided for this contact enrichment
+      properties:
+        first_name:
+          type: string
+          description: First name of the contact
+          examples:
+          - John
+        last_name:
+          type: string
+          description: Last name of the contact
+          examples:
+          - Snow
+        full_name:
+          type: string
+          description: Full name of the contact
+          examples:
+          - John Snow
+        company_domain:
+          type: string
+          description: Domain of the contact's company
+          examples:
+          - example.com
+        company_name:
+          type: string
+          description: Name of the contact's company
+          examples:
+          - Example Inc
+        professional_network_url:
+          type: string
+          description: Professional network profile URL of the contact
+          examples:
+          - https://www.linkedin.com/in/demoge
+    RecordReverseEmail:
+      type: object
+      properties:
+        input:
+          $ref: '#/components/schemas/ContactReverseEmailInput'
+        custom:
+          type: object
+          examples:
+          - user_id: '12584'
+        profile:
+          $ref: '#/components/schemas/Person'
+    Cost:
+      type: object
+      properties:
+        credits:
+          type: integer
+          format: int64
+          description: Number of credits consumed for this enrichment
+          examples:
+          - 1
+          - 0
+    OfficeAddress:
+      type: object
+      description: Office address. Unlike headquarters, office addresses only contain raw address lines without parsed location fields.
+      properties:
+        line1:
+          type: string
+          description: Street address
+          example: 111 8th Ave
+        line2:
+          type: string
+          description: Full location string (city, region, postal code, country code)
+          example: New York, NY 10011, US
+    ResponsePostContactBulkReverseEmail:
+      type: object
+      properties:
+        enrichment_id:
+          type: string
+          format: uuid
+          examples:
+          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+    PersonEducation:
+      type: object
+      properties:
+        school_name:
+          type: string
+          description: Name of the educational institution
+          example: Stanford University
+        degree:
+          type: string
+          description: Degree or qualification obtained
+          example: Bachelor of Science in Computer Science
+        start_at:
+          type: string
+          format: date-time
+          description: Start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2015-09-01T00:00:00Z'
+        end_at:
+          type: string
+          format: date-time
+          description: End date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2019-06-01T00:00:00Z'
+    Email:
+      type: object
+      properties:
+        email:
+          type: string
+          examples:
+          - john.snow@example.com
+        status:
+          type: string
+          examples:
+          - DELIVERABLE
+          enum:
+          - DELIVERABLE
+          - HIGH_PROBABILITY
+          - CATCH_ALL
+          - INVALID
+          - INVALID_DOMAIN
+    ResponsePostContactBulkEnrich:
+      type: object
+      properties:
+        enrichment_id:
+          type: string
+          format: uuid
+          examples:
+          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
+    Employment:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Job title or position
+          example: Senior Software Engineer
+        seniority:
+          type: string
+          description: Seniority level of the person in the company
+          example: Senior
+        job_functions:
+          type: array
+          description: Job functions of the person in the company
+          items:
+            type: object
+            properties:
+              function:
+                type: string
+                description: Job function
+                example: Not Employed
+              sub_function:
+                type: string
+                description: Sub function of the job function
+                example: Freelancer
+        description:
+          type: string
+          description: Description of the role and responsibilities. Not always present.
+          example: Leading the backend team and designing microservices architecture.
+        company:
+          type: object
+          description: Company information
+          allOf:
+          - $ref: '#/components/schemas/EmploymentCompany'
+        is_current:
+          type: boolean
+          description: Whether this is the current employment
+          example: true
+        start_at:
+          type: string
+          format: date-time
+          description: Employment start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2022-03-15T00:00:00Z'
+        end_at:
+          type: string
+          format: date-time
+          description: Employment end date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ). This field is not returned for current employment (when is_current is true).
+          example: '2024-06-30T00:00:00Z'
+    PersonSocialProfile:
       type: object
       properties:
         professional_network:
@@ -809,15 +1113,15 @@ components:
             url:
               type: string
               description: Full professional network profile URL
-              example: https://www.linkedin.com/company/anthropic
+              example: https://www.linkedin.com/in/john-doe
             handle:
               type: string
               description: Professional network profile handle/username
-              example: anthropic
+              example: john-doe
             connection_count:
               type: integer
-              description: Number of professional network followers
-              example: 125000
+              description: Number of professional network connections
+              example: 500
     EmploymentCompany:
       type: object
       properties:
@@ -897,316 +1201,6 @@ components:
           type: string
           description: URL of the company logo hosted by FullEnrich, built from the company's professional network handle. Empty when the handle is unknown.
           example: https://app.fullenrich.com/logo/company/handle/anthropic
-    RecordEnrichment:
-      type: object
-      description: A single enriched contact record
-      properties:
-        input:
-          description: The original input data provided for this contact
-          $ref: '#/components/schemas/ContactEnrichmentInput'
-        custom:
-          type: object
-          description: Custom fields passed during enrichment request, returned unchanged
-          examples:
-          - user_id: '12584'
-        contact_info:
-          description: Contact information found during enrichment (emails and phone numbers)
-          $ref: '#/components/schemas/ContactEnrichedInformation'
-        profile:
-          description: Full professional profile of the person (returned when linkedin_url was provided)
-          $ref: '#/components/schemas/Person'
-    ResponsePostContactBulkReverseEmail:
-      type: object
-      properties:
-        enrichment_id:
-          type: string
-          format: uuid
-          examples:
-          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
-    RequestPostContactBulkEnrich:
-      type: object
-      example:
-        name: Sales Operations in London
-        webhook_url: https://example.com/webhook
-        webhook_events:
-          contact_finished: https://example.com/webhook/contact
-        data:
-        - first_name: John
-          last_name: Snow
-          domain: example.com
-          company_name: Example Inc
-          professional_network_url: https://www.linkedin.com/in/demoge/
-          enrich_fields:
-          - contact.work_emails
-          - contact.personal_emails
-          - contact.phones
-          custom:
-            user_id: '12584'
-      properties:
-        name:
-          type: string
-          description: A readable name for this enrichment (visible in your dashboard)
-        webhook_url:
-          type: string
-          description: URL that will receive a POST request when the entire enrichment is finished (all contacts processed).
-        webhook_events:
-          type: object
-          description: Optional webhook URLs for specific events during enrichment
-          properties:
-            contact_finished:
-              type: string
-              description: URL that receives a POST request each time a single contact is enriched, without waiting for the entire batch to complete. Useful for real-time updates.
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/RequestPostContactBulkEnrichContact'
-      required:
-      - name
-      - data
-    Phone:
-      type: object
-      properties:
-        number:
-          type: string
-          description: Phone number in international format (E.164)
-          examples:
-          - +33 6 76 78 90 65
-        region:
-          type: string
-          description: ISO 3166-1 alpha-2 country code where the phone number is registered (e.g., FR for France, US for United States)
-          examples:
-          - FR
-    RequestPostContactBulkEnrichContact:
-      type: object
-      properties:
-        first_name:
-          type: string
-        last_name:
-          type: string
-        domain:
-          type: string
-        company_name:
-          type: string
-        linkedin_url:
-          type: string
-          description: Supports standard LinkedIn profile URLs (e.g., https://www.linkedin.com/in/demoge) as well as LinkedIn Sales Navigator URLs (e.g., https://www.linkedin.com/in/ACwAACLLwaIBKi655883b).
-        enrich_fields:
-          type: array
-          items:
-            type: string
-            enum:
-            - contact.work_emails
-            - contact.phones
-            - contact.personal_emails
-        custom:
-          type: object
-          description: Returned in the enrichment result. Use it to identify a user, a CRM contact, or to pass any other information. All values must be strings. Limited to 20 entries.
-    PersonSocialProfile:
-      type: object
-      properties:
-        professional_network:
-          type: object
-          description: Professional network profile information
-          properties:
-            id:
-              type: integer
-              description: Professional network profile ID
-              example: 1234
-            url:
-              type: string
-              description: Full professional network profile URL
-              example: https://www.linkedin.com/in/john-doe
-            handle:
-              type: string
-              description: Professional network profile handle/username
-              example: john-doe
-            connection_count:
-              type: integer
-              description: Number of professional network connections
-              example: 500
-    CompanyAddress:
-      type: object
-      description: Structured headquarters address with parsed location fields
-      properties:
-        line1:
-          type: string
-          description: Address line 1 (street address)
-          example: 548 Market St
-        line2:
-          type: string
-          description: Address line 2 (full location string including city, region, postal code, and country code)
-          example: San Francisco, CA 94105, US
-        city:
-          type: string
-          description: City name
-          example: San Francisco
-        region:
-          type: string
-          description: State or region
-          example: California
-        country:
-          type: string
-          description: Country name
-          example: United States
-        country_code:
-          type: string
-          description: ISO country code
-          example: US
-    ResponseGetContactBulkEnrich:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          examples:
-          - 2db5ea61-1752-42cf-8ea1-ab1da060cd0a
-        name:
-          type: string
-          examples:
-          - Sales Operations in London
-        status:
-          type: string
-          examples:
-          - FINISHED
-          enum:
-          - CREATED
-          - IN_PROGRESS
-          - CANCELED
-          - CREDITS_INSUFFICIENT
-          - FINISHED
-          - RATE_LIMIT
-          - UNKNOWN
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/RecordEnrichment'
-        cost:
-          $ref: '#/components/schemas/Cost'
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-      required:
-      - code
-      - message
-    ContactEnrichmentInput:
-      type: object
-      description: The input data originally provided for this contact enrichment
-      properties:
-        first_name:
-          type: string
-          description: First name of the contact
-          examples:
-          - John
-        last_name:
-          type: string
-          description: Last name of the contact
-          examples:
-          - Snow
-        full_name:
-          type: string
-          description: Full name of the contact
-          examples:
-          - John Snow
-        company_domain:
-          type: string
-          description: Domain of the contact's company
-          examples:
-          - example.com
-        company_name:
-          type: string
-          description: Name of the contact's company
-          examples:
-          - Example Inc
-        professional_network_url:
-          type: string
-          description: Professional network profile URL of the contact
-          examples:
-          - https://www.linkedin.com/in/demoge
-    Employment:
-      type: object
-      properties:
-        title:
-          type: string
-          description: Job title or position
-          example: Senior Software Engineer
-        seniority:
-          type: string
-          description: Seniority level of the person in the company
-          example: Senior
-        job_functions:
-          type: array
-          description: Job functions of the person in the company
-          items:
-            type: object
-            properties:
-              function:
-                type: string
-                description: Job function
-                example: Not Employed
-              sub_function:
-                type: string
-                description: Sub function of the job function
-                example: Freelancer
-        description:
-          type: string
-          description: Description of the role and responsibilities. Not always present.
-          example: Leading the backend team and designing microservices architecture.
-        company:
-          type: object
-          description: Company information
-          allOf:
-          - $ref: '#/components/schemas/EmploymentCompany'
-        is_current:
-          type: boolean
-          description: Whether this is the current employment
-          example: true
-        start_at:
-          type: string
-          format: date-time
-          description: Employment start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
-          example: '2022-03-15T00:00:00Z'
-        end_at:
-          type: string
-          format: date-time
-          description: Employment end date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ). This field is not returned for current employment (when is_current is true).
-          example: '2024-06-30T00:00:00Z'
-    Cost:
-      type: object
-      properties:
-        credits:
-          type: integer
-          format: int64
-          description: Number of credits consumed for this enrichment
-          examples:
-          - 1
-          - 0
-    OfficeAddress:
-      type: object
-      description: Office address. Unlike headquarters, office addresses only contain raw address lines without parsed location fields.
-      properties:
-        line1:
-          type: string
-          description: Street address
-          example: 111 8th Ave
-        line2:
-          type: string
-          description: Full location string (city, region, postal code, country code)
-          example: New York, NY 10011, US
-    RecordReverseEmail:
-      type: object
-      properties:
-        input:
-          $ref: '#/components/schemas/ContactReverseEmailInput'
-        custom:
-          type: object
-          examples:
-          - user_id: '12584'
-        profile:
-          $ref: '#/components/schemas/Person'
     Person:
       type: object
       properties:
@@ -1292,13 +1286,19 @@ components:
               description: All employment history (current and past)
               items:
                 $ref: '#/components/schemas/Employment'
-    ContactReverseEmailInput:
+    Phone:
       type: object
       properties:
-        email:
+        number:
           type: string
+          description: Phone number in international format (E.164)
           examples:
-          - john.snow@example.com
+          - +33 6 76 78 90 65
+        region:
+          type: string
+          description: ISO 3166-1 alpha-2 country code where the phone number is registered (e.g., FR for France, US for United States)
+          examples:
+          - FR
   securitySchemes:
     BearerAuth:
       type: http

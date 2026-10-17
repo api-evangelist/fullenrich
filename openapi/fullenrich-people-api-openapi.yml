@@ -131,238 +131,6 @@ paths:
       - People
 components:
   schemas:
-    Employment:
-      type: object
-      properties:
-        title:
-          type: string
-          description: Job title or position
-          example: Senior Software Engineer
-        seniority:
-          type: string
-          description: Seniority level of the person in the company
-          example: Senior
-        job_functions:
-          type: array
-          description: Job functions of the person in the company
-          items:
-            type: object
-            properties:
-              function:
-                type: string
-                description: Job function
-                example: Not Employed
-              sub_function:
-                type: string
-                description: Sub function of the job function
-                example: Freelancer
-        description:
-          type: string
-          description: Description of the role and responsibilities. Not always present.
-          example: Leading the backend team and designing microservices architecture.
-        company:
-          type: object
-          description: Company information
-          allOf:
-          - $ref: '#/components/schemas/EmploymentCompany'
-        is_current:
-          type: boolean
-          description: Whether this is the current employment
-          example: true
-        start_at:
-          type: string
-          format: date-time
-          description: Employment start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
-          example: '2022-03-15T00:00:00Z'
-        end_at:
-          type: string
-          format: date-time
-          description: Employment end date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ). This field is not returned for current employment (when is_current is true).
-          example: '2024-06-30T00:00:00Z'
-    PersonLanguage:
-      type: object
-      properties:
-        language:
-          type: string
-          description: Language name
-          example: French
-        proficiency:
-          type: string
-          description: Proficiency level in the language (e.g., 'NATIVE_OR_BILINGUAL', 'FULL_PROFESSIONAL', 'PROFESSIONAL_WORKING', 'LIMITED_WORKING', 'ELEMENTARY')
-          example: NATIVE_OR_BILINGUAL
-    LookUpPeopleResponse:
-      type: object
-      properties:
-        people:
-          type: array
-          description: Array containing the matching person. Returns an empty array if no match is found.
-          items:
-            $ref: '#/components/schemas/Person'
-    CompanySocialProfile:
-      type: object
-      properties:
-        professional_network:
-          type: object
-          description: Professional network profile information
-          properties:
-            id:
-              type: integer
-              description: Professional network profile ID
-              example: 1234
-            url:
-              type: string
-              description: Full professional network profile URL
-              example: https://www.linkedin.com/company/anthropic
-            handle:
-              type: string
-              description: Professional network profile handle/username
-              example: anthropic
-            connection_count:
-              type: integer
-              description: Number of professional network followers
-              example: 125000
-    EmploymentCompany:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique company identifier
-          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-        name:
-          type: string
-          description: Company name
-          example: Anthropic
-        domain:
-          type: string
-          description: Company domain
-          example: anthropic.com
-        website:
-          type: string
-          description: Company website URL as declared by the company. May differ from `domain` (can include a subdomain, a path or tracking parameters). Omitted when not available.
-          example: https://www.anthropic.com
-        description:
-          type: string
-          description: Company description
-          example: AI safety and research company
-        year_founded:
-          type: integer
-          description: Year the company was founded. Returns 0 when unknown.
-          example: 2021
-        headcount:
-          type: integer
-          description: Exact number of employees. May return 0 even when headcount_range is available.
-          example: 2610
-        headcount_range:
-          type: string
-          description: Employee count range (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5001-10000', '10001+')
-          example: 1001-5000
-        company_type:
-          type: string
-          description: Type of company (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed', 'Partnership', 'Educational', 'Government Agency')
-          example: Privately Held
-        specialties:
-          type: array
-          description: Specialties associated with the company
-          items:
-            type: string
-          example:
-          - Data Enrichment
-          - B2B Data
-        locations:
-          type: object
-          description: Company location information
-          properties:
-            headquarters:
-              type: object
-              description: Main headquarters address with structured location fields. Can be an empty object when no headquarters data is available.
-              allOf:
-              - $ref: '#/components/schemas/CompanyAddress'
-            offices:
-              type: array
-              description: Additional office locations. Only contains raw address lines (line1, line2) without structured city/region/country fields. Can be null or an empty array.
-              nullable: true
-              items:
-                $ref: '#/components/schemas/OfficeAddress'
-        industry:
-          type: object
-          description: Company industry information
-          properties:
-            main_industry:
-              type: string
-              description: Primary industry category (e.g., 'Software Development', 'Computer Hardware Manufacturing', 'Financial Services', 'Healthcare')
-              example: Software Development
-        social_profiles:
-          type: object
-          description: Company's social media profiles
-          allOf:
-          - $ref: '#/components/schemas/CompanySocialProfile'
-        logo_url:
-          type: string
-          description: URL of the company logo hosted by FullEnrich, built from the company's professional network handle. Empty when the handle is unknown.
-          example: https://app.fullenrich.com/logo/company/handle/anthropic
-    PersonSocialProfile:
-      type: object
-      properties:
-        professional_network:
-          type: object
-          description: Professional network profile information
-          properties:
-            id:
-              type: integer
-              description: Professional network profile ID
-              example: 1234
-            url:
-              type: string
-              description: Full professional network profile URL
-              example: https://www.linkedin.com/in/john-doe
-            handle:
-              type: string
-              description: Professional network profile handle/username
-              example: john-doe
-            connection_count:
-              type: integer
-              description: Number of professional network connections
-              example: 500
-    OfficeAddress:
-      type: object
-      description: Office address. Unlike headquarters, office addresses only contain raw address lines without parsed location fields.
-      properties:
-        line1:
-          type: string
-          description: Street address
-          example: 111 8th Ave
-        line2:
-          type: string
-          description: Full location string (city, region, postal code, country code)
-          example: New York, NY 10011, US
-    CompanyAddress:
-      type: object
-      description: Structured headquarters address with parsed location fields
-      properties:
-        line1:
-          type: string
-          description: Address line 1 (street address)
-          example: 548 Market St
-        line2:
-          type: string
-          description: Address line 2 (full location string including city, region, postal code, and country code)
-          example: San Francisco, CA 94105, US
-        city:
-          type: string
-          description: City name
-          example: San Francisco
-        region:
-          type: string
-          description: State or region
-          example: California
-        country:
-          type: string
-          description: Country name
-          example: United States
-        country_code:
-          type: string
-          description: ISO country code
-          example: US
     SearchPeopleRequest:
       type: object
       properties:
@@ -1041,48 +809,6 @@ components:
           - min: 0
             max: 90
             exclude: false
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-      required:
-      - code
-      - message
-    LookUpMetadata:
-      type: object
-      properties:
-        metadata:
-          type: object
-          properties:
-            credits:
-              type: number
-              format: double
-              description: Total number of credits consumed
-              example: 0.25
-    PersonEducation:
-      type: object
-      properties:
-        school_name:
-          type: string
-          description: Name of the educational institution
-          example: Stanford University
-        degree:
-          type: string
-          description: Degree or qualification obtained
-          example: Bachelor of Science in Computer Science
-        start_at:
-          type: string
-          format: date-time
-          description: Start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
-          example: '2015-09-01T00:00:00Z'
-        end_at:
-          type: string
-          format: date-time
-          description: End date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
-          example: '2019-06-01T00:00:00Z'
     Person:
       type: object
       properties:
@@ -1168,6 +894,128 @@ components:
               description: All employment history (current and past)
               items:
                 $ref: '#/components/schemas/Employment'
+    PersonLanguage:
+      type: object
+      properties:
+        language:
+          type: string
+          description: Language name
+          example: French
+        proficiency:
+          type: string
+          description: Proficiency level in the language (e.g., 'NATIVE_OR_BILINGUAL', 'FULL_PROFESSIONAL', 'PROFESSIONAL_WORKING', 'LIMITED_WORKING', 'ELEMENTARY')
+          example: NATIVE_OR_BILINGUAL
+    Employment:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Job title or position
+          example: Senior Software Engineer
+        seniority:
+          type: string
+          description: Seniority level of the person in the company
+          example: Senior
+        job_functions:
+          type: array
+          description: Job functions of the person in the company
+          items:
+            type: object
+            properties:
+              function:
+                type: string
+                description: Job function
+                example: Not Employed
+              sub_function:
+                type: string
+                description: Sub function of the job function
+                example: Freelancer
+        description:
+          type: string
+          description: Description of the role and responsibilities. Not always present.
+          example: Leading the backend team and designing microservices architecture.
+        company:
+          type: object
+          description: Company information
+          allOf:
+          - $ref: '#/components/schemas/EmploymentCompany'
+        is_current:
+          type: boolean
+          description: Whether this is the current employment
+          example: true
+        start_at:
+          type: string
+          format: date-time
+          description: Employment start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2022-03-15T00:00:00Z'
+        end_at:
+          type: string
+          format: date-time
+          description: Employment end date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ). This field is not returned for current employment (when is_current is true).
+          example: '2024-06-30T00:00:00Z'
+    OfficeAddress:
+      type: object
+      description: Office address. Unlike headquarters, office addresses only contain raw address lines without parsed location fields.
+      properties:
+        line1:
+          type: string
+          description: Street address
+          example: 111 8th Ave
+        line2:
+          type: string
+          description: Full location string (city, region, postal code, country code)
+          example: New York, NY 10011, US
+    CompanySocialProfile:
+      type: object
+      properties:
+        professional_network:
+          type: object
+          description: Professional network profile information
+          properties:
+            id:
+              type: integer
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/company/anthropic
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: anthropic
+            connection_count:
+              type: integer
+              description: Number of professional network followers
+              example: 125000
+    CompanyAddress:
+      type: object
+      description: Structured headquarters address with parsed location fields
+      properties:
+        line1:
+          type: string
+          description: Address line 1 (street address)
+          example: 548 Market St
+        line2:
+          type: string
+          description: Address line 2 (full location string including city, region, postal code, and country code)
+          example: San Francisco, CA 94105, US
+        city:
+          type: string
+          description: City name
+          example: San Francisco
+        region:
+          type: string
+          description: State or region
+          example: California
+        country:
+          type: string
+          description: Country name
+          example: United States
+        country_code:
+          type: string
+          description: ISO country code
+          example: US
     Metadata:
       type: object
       properties:
@@ -1191,6 +1039,166 @@ components:
               type: string
               description: The cursor value returned by the previous page. Use this to paginate through the results.
               example: WzE1LjUzNDU2MywiYjQ5MDBiYmQtOTg5MS01Mzk1LWIyODUtOWEyOGNiZThjOTM3Il0=
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - code
+      - message
+    PersonEducation:
+      type: object
+      properties:
+        school_name:
+          type: string
+          description: Name of the educational institution
+          example: Stanford University
+        degree:
+          type: string
+          description: Degree or qualification obtained
+          example: Bachelor of Science in Computer Science
+        start_at:
+          type: string
+          format: date-time
+          description: Start date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2015-09-01T00:00:00Z'
+        end_at:
+          type: string
+          format: date-time
+          description: End date in ISO 8601 format with T separator (YYYY-MM-DDTHH:MM:SSZ)
+          example: '2019-06-01T00:00:00Z'
+    LookUpPeopleResponse:
+      type: object
+      properties:
+        people:
+          type: array
+          description: Array containing the matching person. Returns an empty array if no match is found.
+          items:
+            $ref: '#/components/schemas/Person'
+    SearchPeopleResponse:
+      type: object
+      properties:
+        people:
+          type: array
+          description: Array of people matching the search criteria. Returns empty array if no results found.
+          items:
+            $ref: '#/components/schemas/Person'
+    PersonSocialProfile:
+      type: object
+      properties:
+        professional_network:
+          type: object
+          description: Professional network profile information
+          properties:
+            id:
+              type: integer
+              description: Professional network profile ID
+              example: 1234
+            url:
+              type: string
+              description: Full professional network profile URL
+              example: https://www.linkedin.com/in/john-doe
+            handle:
+              type: string
+              description: Professional network profile handle/username
+              example: john-doe
+            connection_count:
+              type: integer
+              description: Number of professional network connections
+              example: 500
+    LookUpMetadata:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            credits:
+              type: number
+              format: double
+              description: Total number of credits consumed
+              example: 0.25
+    EmploymentCompany:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique company identifier
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        name:
+          type: string
+          description: Company name
+          example: Anthropic
+        domain:
+          type: string
+          description: Company domain
+          example: anthropic.com
+        website:
+          type: string
+          description: Company website URL as declared by the company. May differ from `domain` (can include a subdomain, a path or tracking parameters). Omitted when not available.
+          example: https://www.anthropic.com
+        description:
+          type: string
+          description: Company description
+          example: AI safety and research company
+        year_founded:
+          type: integer
+          description: Year the company was founded. Returns 0 when unknown.
+          example: 2021
+        headcount:
+          type: integer
+          description: Exact number of employees. May return 0 even when headcount_range is available.
+          example: 2610
+        headcount_range:
+          type: string
+          description: Employee count range (e.g., '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5001-10000', '10001+')
+          example: 1001-5000
+        company_type:
+          type: string
+          description: Type of company (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed', 'Partnership', 'Educational', 'Government Agency')
+          example: Privately Held
+        specialties:
+          type: array
+          description: Specialties associated with the company
+          items:
+            type: string
+          example:
+          - Data Enrichment
+          - B2B Data
+        locations:
+          type: object
+          description: Company location information
+          properties:
+            headquarters:
+              type: object
+              description: Main headquarters address with structured location fields. Can be an empty object when no headquarters data is available.
+              allOf:
+              - $ref: '#/components/schemas/CompanyAddress'
+            offices:
+              type: array
+              description: Additional office locations. Only contains raw address lines (line1, line2) without structured city/region/country fields. Can be null or an empty array.
+              nullable: true
+              items:
+                $ref: '#/components/schemas/OfficeAddress'
+        industry:
+          type: object
+          description: Company industry information
+          properties:
+            main_industry:
+              type: string
+              description: Primary industry category (e.g., 'Software Development', 'Computer Hardware Manufacturing', 'Financial Services', 'Healthcare')
+              example: Software Development
+        social_profiles:
+          type: object
+          description: Company's social media profiles
+          allOf:
+          - $ref: '#/components/schemas/CompanySocialProfile'
+        logo_url:
+          type: string
+          description: URL of the company logo hosted by FullEnrich, built from the company's professional network handle. Empty when the handle is unknown.
+          example: https://app.fullenrich.com/logo/company/handle/anthropic
     LookUpPeopleRequest:
       type: object
       description: Provide at least one identifier to match a single person. The professional network URL or ID is the most reliable. A full name can be combined with a company identifier (domain, professional network URL, or professional network ID) to disambiguate the match.
@@ -1219,14 +1227,6 @@ components:
           type: string
           description: Domain of the company the person works for. Used to disambiguate when looking up by name.
           example: anthropic.com
-    SearchPeopleResponse:
-      type: object
-      properties:
-        people:
-          type: array
-          description: Array of people matching the search criteria. Returns empty array if no results found.
-          items:
-            $ref: '#/components/schemas/Person'
   securitySchemes:
     BearerAuth:
       type: http
