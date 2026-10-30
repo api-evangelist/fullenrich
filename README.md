@@ -1,4 +1,4 @@
-# FullEnrich (fullenrich)
+# FullEnrich
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -64,119 +64,166 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-FullEnrich is a B2B contact enrichment platform that finds verified business emails and mobile phone numbers by running a waterfall across 15+ data vendors. Its API accepts contacts by name plus company (domain or company name) or LinkedIn URL, submits them for bulk enrichment, and returns the most probable work email, personal email, and mobile phone, billing credits only when data is found.
+FullEnrich is a B2B contact enrichment platform that finds verified business emails, personal emails and mobile phone numbers by running a waterfall across 25+ data vendors, billing credits only when data is found and passes verification. Its v2 REST API covers four surfaces — asynchronous bulk contact enrichment, bulk reverse email lookup, and synchronous people/company search and lookup across 800M people and 50M companies. Alongside the REST API it operates a first-party remote MCP server with 13 tools, publishes nine MIT-licensed Agent Skills, serves an A2A agent card, and maintains a machine-readable pricing document written for AI agents to read.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/fullenrich/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/fullenrich/refs/heads/main/apis.yml)
+**Areas:** B2B Data · Contact Enrichment · Email Finder · Phone Finder · Waterfall Enrichment · Sales Intelligence · People Search · Company Search · Reverse Email Lookup · Agent Ready · A2A · Data Enrichment
 
-## Tags
+## FullEnrich on APIs.io
 
-- B2B Data
-- Contact Enrichment
-- Email Finder
-- Phone Finder
-- Waterfall Enrichment
-- Sales Intelligence
+Everything profiled for FullEnrich is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/fullenrich/](https://apis.io/providers/fullenrich/)** — or go straight to one of the APIs or properties below.
 
-## Timestamps
+### APIs (5)
 
-- **Created:** 2026-07-01
-- **Modified:** 2026-07-01
+- [FullEnrich Account API](https://apis.io/apis/fullenrich/fullenrich-account-api/) — Check the workspace credit balance before spending, and validate that an API key is active. Both operations are free.
+- [FullEnrich MCP Server](https://apis.io/apis/fullenrich/fullenrich-mcp-server/) — First-party remote Model Context Protocol server exposing 13 tools for B2B contact and company search, waterfall enrichment, and CSV/JSON export. Streamable…
+- [FullEnrich Company API](https://apis.io/apis/fullenrich/fullenrich-company-api/) — The Company API from FullEnrich — 2 operation(s) for company.
+- [FullEnrich Contact API](https://apis.io/apis/fullenrich/fullenrich-contact-api/) — The Contact API from FullEnrich — 4 operation(s) for contact.
+- [FullEnrich People API](https://apis.io/apis/fullenrich/fullenrich-people-api/) — The People API from FullEnrich — 2 operation(s) for people.
 
-## APIs
+### Published properties
 
-### FullEnrich Contact Enrichment API
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-Submit up to 100 contacts per request for bulk waterfall enrichment by first name, last name, and company domain or company name (LinkedIn URL optional), then poll or receive a webhook to retrieve the most probable work email, personal email, and mobile phone plus full enrichment status.
+#### AsyncAPI (1)
 
-- **Human URL:** [https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post](https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post)
-- **Base URL:** `https://app.fullenrich.com/api/v2`
+Event-driven and webhook contracts.
 
-#### Tags
+- [Fullenrich Webhooks](https://apis.io/asyncapis/fullenrich/fullenrich-webhooks/)
 
-- Contact Enrichment
-- Email Finder
-- Phone Finder
-- Waterfall
+#### MCP servers (1)
 
-#### Properties
+Model Context Protocol servers that expose the API to agents.
 
-- [Documentation](https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post)
-- [API Reference](https://docs.fullenrich.com/api/v2/contact/enrich/bulk/post)
-- [OpenAPI](openapi/fullenrich-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/fullenrich.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/fullenrich.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+- [fullenrich](https://apis.io/servers/fullenrich/fullenrich/)
 
-### FullEnrich Enrichment Results API
+#### Agentic access (1)
 
-Retrieve the results of a bulk enrichment by its enrichment_id, returning the run status, credits consumed, and per-contact enriched data including emails with deliverability status and phones in E.164 format.
+Which operations an agent can call, which act, and which need a human in the loop.
 
-- **Human URL:** [https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get](https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get)
-- **Base URL:** `https://app.fullenrich.com/api/v2`
+- [Fullenrich Agentic Access](https://apis.io/agentic-access/fullenrich/fullenrich-agentic-access/)
 
-#### Tags
+#### Collections (4)
 
-- Results
-- Polling
-- Enrichment
+Postman and Open Collection request collections.
 
-#### Properties
+- [FullEnrich API](https://apis.io/collections/fullenrich/open-fullenrich/)
+- [FullEnrich Account API](https://apis.io/collections/fullenrich/open-fullenrich-account-api/)
+- [FullEnrich Account Contact Enrichment API](https://apis.io/collections/fullenrich/open-fullenrich-contact-enrichment-api/)
+- [FullEnrich Account Reverse Email Lookup API](https://apis.io/collections/fullenrich/open-fullenrich-reverse-email-lookup-api/)
 
-- [Documentation](https://docs.fullenrich.com/api/v2/contact/enrich/bulk/get)
-- [OpenAPI](openapi/fullenrich-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/fullenrich.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/fullenrich.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+#### Overlays (5)
 
-### FullEnrich Reverse Email Lookup API
+OpenAPI overlays, including conversational phrasing for each operation.
 
-Resolve a person and company from an email address in bulk, then retrieve the identified profile and contact information by the reverse lookup's enrichment_id.
+- [Fullenrich Account Api Overlay](https://apis.io/overlays/fullenrich/fullenrich-account-api-overlay/)
+- [Fullenrich Contact Enrichment Api Overlay](https://apis.io/overlays/fullenrich/fullenrich-contact-enrichment-api-overlay/)
+- [Fullenrich Lookup Api Overlay](https://apis.io/overlays/fullenrich/fullenrich-lookup-api-overlay/)
+- [Fullenrich Reverse Email Lookup Api Overlay](https://apis.io/overlays/fullenrich/fullenrich-reverse-email-lookup-api-overlay/)
+- [Fullenrich Search Api Overlay](https://apis.io/overlays/fullenrich/fullenrich-search-api-overlay/)
 
-- **Human URL:** [https://docs.fullenrich.com/](https://docs.fullenrich.com/)
-- **Base URL:** `https://app.fullenrich.com/api/v2`
+#### Security (4)
 
-#### Tags
+Authentication, trust centre, and vulnerability disclosure.
 
-- Reverse Email
-- Identity Resolution
-- Enrichment
+- [Fullenrich Authentication](https://apis.io/security/fullenrich/fullenrich-authentication/)
+- [Fullenrich Domain Security](https://apis.io/security/fullenrich/fullenrich-domain-security/)
+- [Fullenrich Trust Center](https://apis.io/security/fullenrich/fullenrich-trust-center/)
+- [Fullenrich Vulnerability Disclosure](https://apis.io/security/fullenrich/fullenrich-vulnerability-disclosure/)
 
-#### Properties
+#### OAuth scopes (1)
 
-- [Documentation](https://docs.fullenrich.com/)
-- [OpenAPI](openapi/fullenrich-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/fullenrich.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/fullenrich.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+The permissions the API asks for.
 
-### FullEnrich Account Credits API
+- [Fullenrich Scopes](https://apis.io/scopes/fullenrich/fullenrich-scopes/)
 
-Check the current credit balance available in your workspace before submitting enrichment jobs, so clients can gate spend against remaining credits.
+#### Plans and pricing (1)
 
-- **Human URL:** [https://docs.fullenrich.com/](https://docs.fullenrich.com/)
-- **Base URL:** `https://app.fullenrich.com/api/v2`
+Published plans, tiers and prices.
 
-#### Tags
+- [Fullenrich Plans Pricing](https://apis.io/plans/fullenrich/fullenrich-plans-pricing/)
 
-- Account
-- Credits
-- Billing
+#### Rate limits (1)
 
-#### Properties
+Published request limits.
 
-- [Documentation](https://docs.fullenrich.com/)
-- [OpenAPI](openapi/fullenrich-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/fullenrich.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/fullenrich.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+- [Fullenrich Rate Limits](https://apis.io/rate-limits/fullenrich/fullenrich-rate-limits/)
 
-## Common Properties
+#### FinOps (1)
 
-- [GitHub Organization](https://github.com/FullEnrich)
-- [LinkedIn](https://www.linkedin.com/company/fullenrich)
+What the API costs to run, by operation.
+
+- [Fullenrich Finops](https://apis.io/finops/fullenrich/fullenrich-finops/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
 - [Website](https://fullenrich.com)
 - [Documentation](https://docs.fullenrich.com)
-- [Plans](plans/fullenrich-plans-pricing.yml)
-- [Rate Limits](rate-limits/fullenrich-rate-limits.yml)
-- [Fin Ops](finops/fullenrich-finops.yml)
+- [Getting started](https://docs.fullenrich.com/api/v2/implement-in-product/getting-started)
+- [API reference](https://docs.fullenrich.com/api/v2/general/introduction)
+- [Pricing](https://fullenrich.com/pricing)
+- [Sign up](https://app.fullenrich.com/app/signUp)
+- [Support](https://help.fullenrich.com)
+- [Blog](https://fullenrich.com/blog)
+- [Security](https://github.com/FullEnrich/fullenrich-skills/blob/HEAD/SECURITY.md)
+- [Compliance](https://fullenrich.com/trust)
+- [Terms of service](https://fullenrich.com/tos)
+- [Privacy policy](https://fullenrich.com/privacy-policy)
+- [GitHub](https://github.com/FullEnrich)
+- [Status](https://status.fullenrich.com)
 
-## Maintainers
+## API Evangelist rating
 
-**FN:** Kin Lane
-**Email:** kin@apievangelist.com
+**Kin Score 60.7** — strong · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 75.0 |
+| Contract quality | 59.2 |
+| Contract governance | 18.2 |
+| Operational transparency | 60.5 |
+| Developer ergonomics | 44.0 |
+| Access clarity | 78.9 |
+
+**Agent readiness 59.5** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | derived (partial credit) |
+| Reversibility Documented | documented (partial credit) |
+| MCP Server | verified |
+| Auth Clarity | served (partial credit) |
+| Idempotency | — |
+| Error Semantics | verified |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | yes |
+| Agent Skills | yes |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | served (partial credit) |
+| Protected Resource Metadata | verified |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | — |
+| Operation Distinctiveness | distinct |
+
+**Regulatory alignment 45.1** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/fullenrich/](https://apis.io/providers/fullenrich/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for FullEnrich: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/fullenrich/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
